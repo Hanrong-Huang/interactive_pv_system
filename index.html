@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive PV System Educational Minigame</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="title">Interactive PV System Education</h1>
+            <p class="subtitle">Learn PV system design through hands-on interaction</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-buttons">
+                <button class="nav-btn active" data-section="diagram">System Diagram</button>
+                <button class="nav-btn" data-section="array-config">Array Configuration</button>
+                <button class="nav-btn" data-section="site-analysis">Site Analysis</button>
+                <button class="nav-btn" data-section="mppt-selection">MPPT Selection</button>
+                <button class="nav-btn" data-section="inverter-selection">AC System</button>
+                <button class="nav-btn" data-section="simulation">System Simulation</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        <div class="container">
+            
+            <!-- Section 1: Interactive PV System Diagram -->
+            <section id="diagram-section" class="section active">
+                <div class="section-header">
+                    <h2>Interactive PV System Diagram</h2>
+                    <p>Click on any component to learn about its function and specifications</p>
+                </div>
+                
+                <div class="diagram-container">
+                    <svg id="pv-diagram" viewBox="0 0 1200 700" class="pv-diagram">
+                        <!-- Solar Panels -->
+                        <g id="solar-panels" class="component clickable" data-component="panels">
+                            <!-- Main panel frame -->
+                            <rect x="80" y="80" width="200" height="120" fill="#1e40af" stroke="#1e3a8a" stroke-width="3" rx="5"/>
+                            <!-- Aluminum frame -->
+                            <rect x="82" y="82" width="196" height="116" fill="none" stroke="#6b7280" stroke-width="2" rx="3"/>
+                            
+                            <!-- Solar cells grid (6x4) -->
+                            <g class="solar-cells">
+                                <!-- Row 1 -->
+                                <rect x="90" y="90" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="124" y="90" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="158" y="90" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="192" y="90" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="226" y="90" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="260" y="90" width="15" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <!-- Row 2 -->
+                                <rect x="90" y="118" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="124" y="118" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="158" y="118" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="192" y="118" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="226" y="118" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="260" y="118" width="15" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <!-- Row 3 -->
+                                <rect x="90" y="146" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="124" y="146" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="158" y="146" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="192" y="146" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="226" y="146" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="260" y="146" width="15" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <!-- Row 4 -->
+                                <rect x="90" y="174" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="124" y="174" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="158" y="174" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="192" y="174" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="226" y="174" width="28" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                                <rect x="260" y="174" width="15" height="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="0.5" rx="2"/>
+                            </g>
+                            
+                            <!-- Junction box -->
+                            <rect x="150" y="202" width="60" height="15" fill="#4b5563" stroke="#374151" stroke-width="1" rx="3"/>
+                            <rect x="155" y="205" width="50" height="9" fill="#6b7280" rx="2"/>
+                            <!-- Wiring -->
+                            <line x1="180" y1="217" x2="180" y2="225" stroke="#dc2626" stroke-width="2"/>
+                            <line x1="175" y1="217" x2="175" y2="225" stroke="#000" stroke-width="2"/>
+                            
+                            <text x="180" y="240" text-anchor="middle" class="component-label">Solar Panels</text>
+                        </g>
+
+                        <!-- MPPT Charge Controller -->
+                        <g id="mppt-controller" class="component clickable" data-component="mppt">
+                            <!-- Main controller body -->
+                            <rect x="400" y="100" width="100" height="60" fill="#059669" stroke="#047857" stroke-width="3" rx="5"/>
+                            <!-- Front panel -->
+                            <rect x="405" y="105" width="90" height="50" fill="#065f46" stroke="#047857" stroke-width="1" rx="3"/>
+                            <!-- LCD display -->
+                            <rect x="415" y="115" width="35" height="15" fill="#000" stroke="#374151" stroke-width="1" rx="2"/>
+                            <rect x="417" y="117" width="31" height="11" fill="#22c55e" rx="1"/>
+                            <text x="432" y="126" text-anchor="middle" font-size="6" fill="#000">150W</text>
+                            <!-- LED indicators -->
+                            <circle cx="465" cy="115" r="3" fill="#22c55e" stroke="#16a34a" stroke-width="1"/>
+                            <circle cx="465" cy="125" r="3" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                            <circle cx="465" cy="135" r="3" fill="#ef4444" stroke="#dc2626" stroke-width="1"/>
+                            <!-- Heat sink -->
+                            <g class="heat-sink">
+                                <rect x="405" y="138" width="10" height="20" fill="#6b7280" stroke="#4b5563" stroke-width="1"/>
+                                <line x1="407" y1="140" x2="407" y2="156" stroke="#9ca3af" stroke-width="0.5"/>
+                                <line x1="409" y1="140" x2="409" y2="156" stroke="#9ca3af" stroke-width="0.5"/>
+                                <line x1="411" y1="140" x2="411" y2="156" stroke="#9ca3af" stroke-width="0.5"/>
+                                <line x1="413" y1="140" x2="413" y2="156" stroke="#9ca3af" stroke-width="0.5"/>
+                            </g>
+                            <!-- Terminals -->
+                            <rect x="430" y="160" width="8" height="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                            <rect x="442" y="160" width="8" height="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                            <rect x="454" y="160" width="8" height="5" fill="#dc2626" stroke="#b91c1c" stroke-width="1"/>
+                            <rect x="466" y="160" width="8" height="5" fill="#dc2626" stroke="#b91c1c" stroke-width="1"/>
+                            
+                            <text x="450" y="180" text-anchor="middle" class="component-label">MPPT Controller</text>
+                        </g>
+
+                        <!-- Battery Bank -->
+                        <g id="battery-bank" class="component clickable" data-component="battery">
+                            <!-- Battery bank enclosure -->
+                            <rect x="400" y="300" width="100" height="80" fill="#374151" stroke="#1f2937" stroke-width="3" rx="5"/>
+                            <!-- Individual batteries -->
+                            <g class="battery-1">
+                                <rect x="410" y="310" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="412" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="422" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="419" y="325" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            <g class="battery-2">
+                                <rect x="432" y="310" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="434" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="444" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="441" y="325" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            <g class="battery-3">
+                                <rect x="454" y="310" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="456" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="466" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="463" y="325" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            <g class="battery-4">
+                                <rect x="476" y="310" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="478" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="488" y="302" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="485" y="325" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            
+                            <!-- Lower row batteries -->
+                            <g class="battery-5">
+                                <rect x="410" y="345" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="412" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="422" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="419" y="360" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            <g class="battery-6">
+                                <rect x="432" y="345" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="434" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="444" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="441" y="360" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            <g class="battery-7">
+                                <rect x="454" y="345" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="456" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="466" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="463" y="360" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            <g class="battery-8">
+                                <rect x="476" y="345" width="18" height="25" fill="#dc2626" stroke="#b91c1c" stroke-width="1" rx="2"/>
+                                <rect x="478" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <rect x="488" y="337" width="4" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                                <text x="485" y="360" text-anchor="middle" font-size="8" fill="white">12V</text>
+                            </g>
+                            
+                            <!-- Connection wires between batteries -->
+                            <line x1="428" y1="322" x2="432" y2="322" stroke="#fbbf24" stroke-width="2"/>
+                            <line x1="450" y1="322" x2="454" y2="322" stroke="#fbbf24" stroke-width="2"/>
+                            <line x1="472" y1="322" x2="476" y2="322" stroke="#fbbf24" stroke-width="2"/>
+                            
+                            <line x1="428" y1="357" x2="432" y2="357" stroke="#000" stroke-width="2"/>
+                            <line x1="450" y1="357" x2="454" y2="357" stroke="#000" stroke-width="2"/>
+                            <line x1="472" y1="357" x2="476" y2="357" stroke="#000" stroke-width="2"/>
+                            
+                            <text x="450" y="395" text-anchor="middle" class="component-label">Battery Bank (48V)</text>
+                        </g>
+
+                        <!-- Inverter -->
+                        <g id="inverter" class="component clickable" data-component="inverter">
+                            <!-- Main inverter body -->
+                            <rect x="650" y="250" width="100" height="80" fill="#7c3aed" stroke="#6d28d9" stroke-width="3" rx="5"/>
+                            <!-- Front panel -->
+                            <rect x="655" y="255" width="90" height="70" fill="#8b5cf6" stroke="#7c3aed" stroke-width="1" rx="3"/>
+                            
+                            <!-- Ventilation grilles -->
+                            <g class="ventilation">
+                                <line x1="660" y1="260" x2="740" y2="260" stroke="#6d28d9" stroke-width="1"/>
+                                <line x1="660" y1="265" x2="740" y2="265" stroke="#6d28d9" stroke-width="1"/>
+                                <line x1="660" y1="270" x2="740" y2="270" stroke="#6d28d9" stroke-width="1"/>
+                                <line x1="660" y1="310" x2="740" y2="310" stroke="#6d28d9" stroke-width="1"/>
+                                <line x1="660" y1="315" x2="740" y2="315" stroke="#6d28d9" stroke-width="1"/>
+                                <line x1="660" y1="320" x2="740" y2="320" stroke="#6d28d9" stroke-width="1"/>
+                            </g>
+                            
+                            <!-- LCD display -->
+                            <rect x="665" y="280" width="25" height="15" fill="#000" stroke="#374151" stroke-width="1" rx="2"/>
+                            <rect x="667" y="282" width="21" height="11" fill="#3b82f6" rx="1"/>
+                            <text x="677" y="290" text-anchor="middle" font-size="6" fill="white">2.4kW</text>
+                            
+                            <!-- AC wave symbol -->
+                            <g class="ac-symbol">
+                                <path d="M 695 285 Q 705 275 715 285 Q 725 295 735 285" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                                <path d="M 695 295 Q 705 285 715 295 Q 725 305 735 295" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                            </g>
+                            
+                            <!-- LED indicators -->
+                            <circle cx="710" cy="275" r="2" fill="#22c55e" stroke="#16a34a" stroke-width="1"/>
+                            <circle cx="720" cy="275" r="2" fill="#3b82f6" stroke="#2563eb" stroke-width="1"/>
+                            <circle cx="730" cy="275" r="2" fill="#ef4444" stroke="#dc2626" stroke-width="1"/>
+                            
+                            <!-- Cooling fan -->
+                            <circle cx="700" cy="305" r="8" fill="#4b5563" stroke="#374151" stroke-width="1"/>
+                            <line x1="696" y1="301" x2="704" y2="309" stroke="#9ca3af" stroke-width="1"/>
+                            <line x1="704" y1="301" x2="696" y2="309" stroke="#9ca3af" stroke-width="1"/>
+                            <line x1="700" y1="297" x2="700" y2="313" stroke="#9ca3af" stroke-width="1"/>
+                            <line x1="692" y1="305" x2="708" y2="305" stroke="#9ca3af" stroke-width="1"/>
+                            
+                            <!-- DC/AC conversion symbol -->
+                            <text x="670" y="305" font-size="10" fill="#dc2626" font-weight="bold">DC</text>
+                            <line x1="685" y1="300" x2="690" y2="300" stroke="#374151" stroke-width="2" marker-end="url(#arrowhead-blue)"/>
+                            <text x="720" y="315" font-size="10" fill="#fbbf24" font-weight="bold">AC</text>
+                            
+                            <text x="700" y="350" text-anchor="middle" class="component-label">Inverter</text>
+                        </g>
+
+                        <!-- DC Loads -->
+                        <g id="dc-loads" class="component clickable" data-component="dc-loads">
+                            <!-- LED Strip -->
+                            <rect x="420" y="500" width="60" height="8" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" rx="4"/>
+                            <circle cx="425" cy="504" r="2" fill="#fff" opacity="0.8"/>
+                            <circle cx="435" cy="504" r="2" fill="#fff" opacity="0.8"/>
+                            <circle cx="445" cy="504" r="2" fill="#fff" opacity="0.8"/>
+                            <circle cx="455" cy="504" r="2" fill="#fff" opacity="0.8"/>
+                            <circle cx="465" cy="504" r="2" fill="#fff" opacity="0.8"/>
+                            <circle cx="475" cy="504" r="2" fill="#fff" opacity="0.8"/>
+                            
+                            <!-- DC Fan -->
+                            <circle cx="420" cy="525" r="12" fill="#6b7280" stroke="#4b5563" stroke-width="2"/>
+                            <circle cx="420" cy="525" r="8" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
+                            <line x1="415" y1="520" x2="425" y2="530" stroke="#374151" stroke-width="2"/>
+                            <line x1="425" y1="520" x2="415" y2="530" stroke="#374151" stroke-width="2"/>
+                            <circle cx="420" cy="525" r="2" fill="#374151"/>
+                            
+                            <!-- DC Refrigerator -->
+                            <rect x="460" y="515" width="25" height="35" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2" rx="3"/>
+                            <rect x="463" y="518" width="19" height="12" fill="#3b82f6" stroke="#2563eb" stroke-width="1" rx="1"/>
+                            <rect x="465" y="532" width="15" height="8" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                            <circle cx="480" cy="528" r="1" fill="#374151"/>
+                            <text x="472" y="546" text-anchor="middle" font-size="6" fill="#4b5563">DC</text>
+                            
+                            <!-- Electronics (Charge Controller) -->
+                            <rect x="435" y="535" width="20" height="12" fill="#374151" stroke="#1f2937" stroke-width="1" rx="2"/>
+                            <rect x="437" y="537" width="5" height="3" fill="#22c55e" rx="1"/>
+                            <rect x="444" y="537" width="5" height="3" fill="#ef4444" rx="1"/>
+                            <rect x="451" y="537" width="2" height="8" fill="#6b7280" rx="1"/>
+                            
+                            <text x="450" y="565" text-anchor="middle" class="component-label">DC Loads</text>
+                        </g>
+
+                        <!-- AC Loads -->
+                        <g id="ac-loads" class="component clickable" data-component="ac-loads">
+                            <!-- Refrigerator -->
+                            <rect x="900" y="250" width="30" height="45" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2" rx="3"/>
+                            <rect x="903" y="253" width="24" height="18" fill="#3b82f6" stroke="#2563eb" stroke-width="1" rx="2"/>
+                            <rect x="905" y="275" width="20" height="12" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                            <circle cx="925" cy="268" r="1.5" fill="#374151"/>
+                            <text x="915" y="303" text-anchor="middle" font-size="6" fill="#4b5563">AC</text>
+                            
+                            <!-- TV -->
+                            <rect x="940" y="260" width="35" height="25" fill="#1f2937" stroke="#111827" stroke-width="2" rx="2"/>
+                            <rect x="943" y="263" width="29" height="19" fill="#3b82f6" stroke="#2563eb" stroke-width="1" rx="1"/>
+                            <rect x="955" y="287" width="5" height="3" fill="#6b7280" stroke="#4b5563" stroke-width="1" rx="1"/>
+                            <circle cx="957" cy="292" r="1" fill="#ef4444"/>
+                            
+                            <!-- Water Pump -->
+                            <circle cx="920" cy="315" r="15" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+                            <circle cx="920" cy="315" r="10" fill="#3b82f6" stroke="#2563eb" stroke-width="1"/>
+                            <circle cx="920" cy="315" r="3" fill="#1f2937"/>
+                            <line x1="920" y1="300" x2="920" y2="308" stroke="#6b7280" stroke-width="3"/>
+                            <rect x="918" y="298" width="4" height="4" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
+                            
+                            <!-- Lighting -->
+                            <g class="ac-lights">
+                                <circle cx="950" cy="315" r="8" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                                <circle cx="950" cy="315" r="5" fill="#fef3c7" opacity="0.8"/>
+                                <line x1="942" y1="307" x2="958" y2="323" stroke="#f59e0b" stroke-width="1"/>
+                                <line x1="958" y1="307" x2="942" y2="323" stroke="#f59e0b" stroke-width="1"/>
+                                <line x1="950" y1="299" x2="950" y2="331" stroke="#f59e0b" stroke-width="1"/>
+                                <line x1="934" y1="315" x2="966" y2="315" stroke="#f59e0b" stroke-width="1"/>
+                            </g>
+                            
+                            <text x="945" y="345" text-anchor="middle" class="component-label">AC Loads</text>
+                        </g>
+
+                        <!-- Power Flow Arrows with better positioning -->
+                        <defs>
+                            <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#059669" />
+                            </marker>
+                            <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb" />
+                            </marker>
+                            <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626" />
+                            </marker>
+                        </defs>
+                        
+                        <!-- Improved power flow lines with proper spacing -->
+                        <g class="power-flow-group">
+                            <!-- Solar to MPPT -->
+                            <line x1="280" y1="140" x2="400" y2="140" stroke="#059669" stroke-width="4" marker-end="url(#arrowhead-green)" class="power-flow"/>
+                            <text id="generation-power" x="330" y="130" class="connection-label power-label" text-anchor="middle" font-weight="bold" fill="#059669">863W</text>
+                            
+                            <!-- MPPT to Battery -->
+                            <line x1="450" y1="165" x2="450" y2="295" stroke="#059669" stroke-width="4" marker-end="url(#arrowhead-green)" class="power-flow"/>
+                            <text x="470" y="230" class="connection-label power-label" fill="#059669" font-weight="bold">Charging</text>
+                            
+                            <!-- Battery to Inverter with curved path -->
+                            <path d="M 500 340 Q 575 295 650 290" stroke="#2563eb" stroke-width="4" fill="none" marker-end="url(#arrowhead-blue)" class="power-flow"/>
+                            <text x="575" y="330" class="connection-label power-label" fill="#2563eb" text-anchor="middle" font-weight="bold">48V DC</text>
+                            
+                            <!-- Battery to DC Loads -->
+                            <line x1="450" y1="385" x2="450" y2="495" stroke="#dc2626" stroke-width="4" marker-end="url(#arrowhead-red)" class="power-flow"/>
+                            <text id="dc-load-power" x="470" y="440" class="connection-label power-label" fill="#dc2626" font-weight="bold">DC: 205W</text>
+                            
+                            <!-- Inverter to AC Loads -->
+                            <line x1="755" y1="290" x2="895" y2="290" stroke="#dc2626" stroke-width="4" marker-end="url(#arrowhead-red)" class="power-flow"/>
+                            <text id="load-power" x="815" y="280" class="connection-label power-label" fill="#dc2626" text-anchor="middle" font-weight="bold">AC: 1400W</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="diagram-stats">
+                    <div class="stat-card">
+                        <h4>System Overview</h4>
+                        <p>Total Power: <span id="system-power">2000W</span></p>
+                        <p>Battery Voltage: <span id="system-voltage">48V</span></p>
+                        <p>System Type: Off-Grid Standalone</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Array Configuration -->
+            <section id="array-config-section" class="section">
+                <div class="section-header">
+                    <h2>Solar Array Configuration</h2>
+                    <p>Design your solar array by configuring series and parallel connections</p>
+                </div>
+
+                <div class="config-container">
+                    <div class="panel-selection">
+                        <h3>Solar Panel Selection</h3>
+                        <div class="panel-selector">
+                            <label for="panel-select">Choose Solar Panel:</label>
+                            <select id="panel-select" class="panel-dropdown">
+                                <option value="0">SunPower SPR-350-WHT (350W)</option>
+                                <option value="1">LG NeON R LG365Q1C-A5 (365W)</option>
+                                <option value="2">Canadian Solar CS3U-400MS (400W)</option>
+                                <option value="3">Jinko Tiger Pro JKM450M-60HL4-V (450W)</option>
+                                <option value="4">REC Alpha Pure-R REC405AA (405W)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="module-specs">
+                        <h3>Selected Module Specifications</h3>
+                        <div class="spec-grid">
+                            <div class="spec-item">
+                                <label>Model:</label>
+                                <span>SunPower SPR-350-WHT</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Max Power (Pmax):</label>
+                                <span>350W</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Voltage at Pmax (Vmp):</label>
+                                <span>29.8V</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Current at Pmax (Imp):</label>
+                                <span>11.75A</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Open Circuit Voltage (Voc):</label>
+                                <span>36.3V</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Short Circuit Current (Isc):</label>
+                                <span>12.47A</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Temp Coefficient (Power):</label>
+                                <span>-0.29%/°C</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Temp Coefficient (Voltage):</label>
+                                <span>-0.27%/°C</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="configuration-panel">
+                        <div class="config-inputs">
+                            <h3>Array Configuration</h3>
+                            <div class="input-group">
+                                <label for="series-modules">Modules in Series:</label>
+                                <input type="number" id="series-modules" min="1" max="20" value="2">
+                            </div>
+                            <div class="input-group">
+                                <label for="parallel-strings">Parallel Strings:</label>
+                                <input type="number" id="parallel-strings" min="1" max="10" value="3">
+                            </div>
+                            <div class="input-group">
+                                <label for="cell-temperature">Cell Temperature (°C):</label>
+                                <input type="number" id="cell-temperature" min="-20" max="80" value="25">
+                                <button class="help-btn" data-help="temperature">?</button>
+                            </div>
+                        </div>
+
+                        <div class="visual-array">
+                            <h3>Visual Array Layout</h3>
+                            <div id="array-visual" class="array-visual"></div>
+                        </div>
+                    </div>
+
+                    <div class="array-results">
+                        <h3>Array Output (STC Conditions)</h3>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <label>Total Modules:</label>
+                                <span id="total-modules">6</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Array Voltage (Vm):</label>
+                                <span id="array-voltage">82.6V</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Array Current (Im):</label>
+                                <span id="array-current">25.44A</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Array Power:</label>
+                                <span id="array-power">2100W</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Open Circuit Voltage (Voc):</label>
+                                <span id="array-voc">98.4V</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Short Circuit Current (Isc):</label>
+                                <span id="array-isc">27.21A</span>
+                            </div>
+                            <div class="result-item derated" style="display: none;">
+                                <label>Derated Power:</label>
+                                <span id="derated-power">2100W</span>
+                            </div>
+                        </div>
+                        
+                        <button class="proceed-btn" id="proceed-to-mppt">Use This Array for MPPT Selection</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Solar Site Analysis -->
+            <section id="site-analysis-section" class="section">
+                <div class="section-header">
+                    <h2>Solar Site Analysis</h2>
+                    <p>Optimize your system performance by analyzing location and installation parameters</p>
+                </div>
+
+                <div class="site-container">
+                    <div class="location-panel">
+                        <h3>Location Selection</h3>
+                        <div class="location-selector">
+                            <label for="location-select">Choose Location:</label>
+                            <select id="location-select" class="location-dropdown">
+                                <optgroup label="United States">
+                                    <option value="phoenix">Phoenix, AZ</option>
+                                    <option value="los_angeles">Los Angeles, CA</option>
+                                    <option value="miami">Miami, FL</option>
+                                    <option value="denver">Denver, CO</option>
+                                    <option value="houston">Houston, TX</option>
+                                    <option value="new_york">New York, NY</option>
+                                    <option value="chicago">Chicago, IL</option>
+                                    <option value="seattle">Seattle, WA</option>
+                                </optgroup>
+                                <optgroup label="Australia">
+                                    <option value="sydney">Sydney, NSW</option>
+                                    <option value="melbourne">Melbourne, VIC</option>
+                                    <option value="brisbane">Brisbane, QLD</option>
+                                    <option value="perth">Perth, WA</option>
+                                    <option value="adelaide">Adelaide, SA</option>
+                                    <option value="canberra">Canberra, ACT</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="location-info">
+                            <h4>Selected Location:</h4>
+                            <p id="location-display">Phoenix, AZ</p>
+                            <p><strong>Latitude:</strong> <span id="latitude-display">33.4°N</span></p>
+                            <p><strong>Longitude:</strong> <span id="longitude-display">112.1°W</span></p>
+                            <p><strong>Annual GHI:</strong> <span id="ghi-display">2200 kWh/m²/year</span></p>
+                        </div>
+                    </div>
+
+                    <div class="angle-panel">
+                        <h3>Installation Angles</h3>
+                        
+                        <div class="angle-control">
+                            <label for="tilt-angle">Tilt Angle:</label>
+                            <input type="range" id="tilt-angle" min="0" max="90" value="33" class="angle-slider">
+                            <span id="tilt-display">33°</span>
+                            <div id="optimal-tilt-display" class="optimal-indicator">Optimal: 33°</div>
+                            <div class="angle-explanation">
+                                <p><small><strong>Tilt Angle Guide:</strong> Optimal angle typically equals latitude ±15°. Steeper angles favor winter generation, flatter angles favor summer output.</small></p>
+                                <p><small><strong>Seasonal optimization:</strong> Latitude-15° for summer focus, Latitude+15° for winter focus, or adjustable mounting for year-round optimization.</small></p>
+                            </div>
+                        </div>
+                        
+                        <div class="angle-control">
+                            <label for="azimuth-angle">Azimuth Angle:</label>
+                            <input type="range" id="azimuth-angle" min="0" max="360" value="180" class="angle-slider">
+                            <span id="azimuth-display">180°</span>
+                            <div class="azimuth-compass">
+                                <div class="compass-directions">
+                                    <span class="north">N (0°)</span>
+                                    <span class="east">E (90°)</span>
+                                    <span class="south" id="south-direction">S (180°)</span>
+                                    <span class="west">W (270°)</span>
+                                </div>
+                                <div id="hemisphere-note" class="hemisphere-note">
+                                    <em>North-facing optimal in Southern Hemisphere</em>
+                                </div>
+                            </div>
+                            <div class="angle-explanation">
+                                <p><small><strong>Azimuth Angle Guide:</strong> 180° (South-facing) optimal in Northern Hemisphere for maximum sun exposure. In Southern Hemisphere, 0° (North-facing) is optimal as the sun travels through the northern sky.</small></p>
+                                <p><small><strong>Why it matters:</strong> Proper azimuth orientation can increase energy generation by 10-25% compared to east/west orientations.</small></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="performance-impact">
+                        <h3>Performance Impact</h3>
+                        <div class="impact-grid">
+                            <div class="impact-item">
+                                <label>Estimated Annual Generation:</label>
+                                <span id="annual-generation">Calculate</span>
+                            </div>
+                            <div class="impact-item">
+                                <label>Performance Ratio:</label>
+                                <span id="performance-ratio">Calculate</span>
+                            </div>
+                            <div class="impact-item">
+                                <label>Irradiation Factor:</label>
+                                <span id="irradiation-factor">1.0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="site-recommendations">
+                            <h4>Recommendations:</h4>
+                            <ul id="site-recommendations-list">
+                                <li>Tilt angle is optimal for this location</li>
+                                <li>South-facing orientation maximizes generation</li>
+                                <li>Consider seasonal tilt adjustments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: MPPT Selection -->
+            <section id="mppt-selection-section" class="section">
+                <div class="section-header">
+                    <h2>MPPT Charge Controller Selection</h2>
+                    <p>Select the appropriate MPPT controller for your configured PV array</p>
+                </div>
+
+                <div class="mppt-container">
+                    <div class="array-summary">
+                        <h3>Your PV Array Specifications</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <label>Total Power:</label>
+                                <span id="summary-power">2100W</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Operating Voltage (Vm):</label>
+                                <span id="summary-voltage">82.6V</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Operating Current (Im):</label>
+                                <span id="summary-current">25.44A</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Open Circuit Voltage (Voc):</label>
+                                <span id="summary-voc">98.4V</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Short Circuit Current (Isc):</label>
+                                <span id="summary-isc">27.21A</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mppt-options">
+                        <h3>Available MPPT Controllers</h3>
+                        <div class="controller-grid">
+                            
+                            <div class="controller-card" data-controller="1">
+                                <h4>Victron SmartSolar 75/15</h4>
+                                <div class="controller-specs">
+                                    <p><strong>Max Power:</strong> 220W</p>
+                                    <p><strong>Max Input Voltage:</strong> 75V</p>
+                                    <p><strong>MPPT Range:</strong> 18-67V</p>
+                                    <p><strong>Max Current:</strong> 15A</p>
+                                    <p><strong>Battery Voltage:</strong> 12/24V</p>
+                                </div>
+                                <button class="select-controller" data-controller="1">Select This Controller</button>
+                            </div>
+
+                            <div class="controller-card" data-controller="2">
+                                <h4>Victron SmartSolar 100/30</h4>
+                                <div class="controller-specs">
+                                    <p><strong>Max Power:</strong> 440W</p>
+                                    <p><strong>Max Input Voltage:</strong> 100V</p>
+                                    <p><strong>MPPT Range:</strong> 18-92V</p>
+                                    <p><strong>Max Current:</strong> 30A</p>
+                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
+                                </div>
+                                <button class="select-controller" data-controller="2">Select This Controller</button>
+                            </div>
+
+                            <div class="controller-card" data-controller="3">
+                                <h4>Victron SmartSolar 100/50</h4>
+                                <div class="controller-specs">
+                                    <p><strong>Max Power:</strong> 700W</p>
+                                    <p><strong>Max Input Voltage:</strong> 100V</p>
+                                    <p><strong>MPPT Range:</strong> 18-92V</p>
+                                    <p><strong>Max Current:</strong> 50A</p>
+                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
+                                </div>
+                                <button class="select-controller" data-controller="3">Select This Controller</button>
+                            </div>
+
+                            <div class="controller-card" data-controller="4">
+                                <h4>Victron SmartSolar 150/60</h4>
+                                <div class="controller-specs">
+                                    <p><strong>Max Power:</strong> 850W</p>
+                                    <p><strong>Max Input Voltage:</strong> 150V</p>
+                                    <p><strong>MPPT Range:</strong> 18-142V</p>
+                                    <p><strong>Max Current:</strong> 60A</p>
+                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
+                                </div>
+                                <button class="select-controller" data-controller="4">Select This Controller</button>
+                            </div>
+
+                            <div class="controller-card" data-controller="5">
+                                <h4>Victron SmartSolar 150/85</h4>
+                                <div class="controller-specs">
+                                    <p><strong>Max Power:</strong> 1200W</p>
+                                    <p><strong>Max Input Voltage:</strong> 150V</p>
+                                    <p><strong>MPPT Range:</strong> 18-142V</p>
+                                    <p><strong>Max Current:</strong> 85A</p>
+                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
+                                </div>
+                                <button class="select-controller" data-controller="5">Select This Controller</button>
+                            </div>
+
+                            <div class="controller-card" data-controller="6">
+                                <h4>Victron SmartSolar 250/100</h4>
+                                <div class="controller-specs">
+                                    <p><strong>Max Power:</strong> 1450W</p>
+                                    <p><strong>Max Input Voltage:</strong> 250V</p>
+                                    <p><strong>MPPT Range:</strong> 18-230V</p>
+                                    <p><strong>Max Current:</strong> 100A</p>
+                                    <p><strong>Battery Voltage:</strong> 24/48V</p>
+                                </div>
+                                <button class="select-controller" data-controller="6">Select This Controller</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="selection-feedback" id="selection-feedback" style="display: none;">
+                        <!-- Feedback will be dynamically populated -->
+                    </div>
+
+                    <div class="hints-panel">
+                        <button class="hint-btn" id="show-hints">Show Sizing Hints</button>
+                        <div class="hints-content" id="hints-content" style="display: none;">
+                            <h4>MPPT Controller Sizing Guidelines:</h4>
+                            <div class="hints-visual">
+                                <img src="img/PV system component matching animation0.png" alt="MPPT Sizing Guide" class="hints-image">
+                            </div>
+                            <ul>
+                                <li><strong>Voltage Rating:</strong> Controller max voltage > PV array Voc (with safety margin)</li>
+                                <li><strong>Current Rating:</strong> Controller max current ≥ PV array Isc × 1.25</li>
+                                <li><strong>Power Rating:</strong> Consider battery voltage for power calculation</li>
+                                <li><strong>MPPT Range:</strong> Should include PV array's Vm operating voltage</li>
+                                <li><strong>Safety Factor:</strong> Always include 25% safety margin for current</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: AC System/Inverter Selection -->
+            <section id="inverter-selection-section" class="section">
+                <div class="section-header">
+                    <h2>AC System & Inverter Selection</h2>
+                    <p>Complete your system with appropriate inverter selection</p>
+                </div>
+
+                <div class="inverter-container">
+                    <div class="dc-load-analysis">
+                        <h3>DC Load Requirements</h3>
+                        <div class="dc-load-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>DC Load Type</th>
+                                        <th>Power (W)</th>
+                                        <th>Hours/Day</th>
+                                        <th>Daily Energy (Wh)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>LED Lights</td>
+                                        <td>50</td>
+                                        <td>8</td>
+                                        <td>400</td>
+                                    </tr>
+                                    <tr>
+                                        <td>DC Fans</td>
+                                        <td>25</td>
+                                        <td>10</td>
+                                        <td>250</td>
+                                    </tr>
+                                    <tr>
+                                        <td>DC Refrigerator</td>
+                                        <td>100</td>
+                                        <td>12</td>
+                                        <td>1200</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Electronics</td>
+                                        <td>30</td>
+                                        <td>16</td>
+                                        <td>480</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td><strong>Total DC</strong></td>
+                                        <td><strong>205W</strong></td>
+                                        <td><strong>-</strong></td>
+                                        <td><strong>2330Wh</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="load-analysis">
+                        <h3>AC Load Requirements</h3>
+                        <div class="load-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Load Type</th>
+                                        <th>Power (W)</th>
+                                        <th>Hours/Day</th>
+                                        <th>Daily Energy (Wh)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>LED Lighting</td>
+                                        <td>200</td>
+                                        <td>6</td>
+                                        <td>1200</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Refrigerator</td>
+                                        <td>150</td>
+                                        <td>8</td>
+                                        <td>1200</td>
+                                    </tr>
+                                    <tr>
+                                        <td>TV & Electronics</td>
+                                        <td>300</td>
+                                        <td>4</td>
+                                        <td>1200</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Water Pump</td>
+                                        <td>750</td>
+                                        <td>1</td>
+                                        <td>750</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td><strong>Total</strong></td>
+                                        <td><strong>1400W</strong></td>
+                                        <td><strong>-</strong></td>
+                                        <td><strong>4350Wh</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="inverter-options">
+                        <h3>Available Inverters</h3>
+                        <div class="inverter-grid">
+                            
+                            <div class="inverter-card" data-inverter="1">
+                                <h4>Victron Phoenix 12/1200</h4>
+                                <div class="inverter-specs">
+                                    <p><strong>Continuous Power:</strong> 1200W</p>
+                                    <p><strong>Surge Power:</strong> 2400W</p>
+                                    <p><strong>Input Voltage:</strong> 12V DC</p>
+                                    <p><strong>Efficiency:</strong> 93%</p>
+                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
+                                </div>
+                                <button class="select-inverter" data-inverter="1">Select This Inverter</button>
+                            </div>
+
+                            <div class="inverter-card" data-inverter="2">
+                                <h4>Outback Power GFX2012E</h4>
+                                <div class="inverter-specs">
+                                    <p><strong>Continuous Power:</strong> 2000W</p>
+                                    <p><strong>Surge Power:</strong> 4000W</p>
+                                    <p><strong>Input Voltage:</strong> 12V DC</p>
+                                    <p><strong>Efficiency:</strong> 91%</p>
+                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
+                                </div>
+                                <button class="select-inverter" data-inverter="2">Select This Inverter</button>
+                            </div>
+
+                            <div class="inverter-card" data-inverter="3">
+                                <h4>Schneider XW Pro 3000</h4>
+                                <div class="inverter-specs">
+                                    <p><strong>Continuous Power:</strong> 3000W</p>
+                                    <p><strong>Surge Power:</strong> 6000W</p>
+                                    <p><strong>Input Voltage:</strong> 24V DC</p>
+                                    <p><strong>Efficiency:</strong> 94%</p>
+                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
+                                </div>
+                                <button class="select-inverter" data-inverter="3">Select This Inverter</button>
+                            </div>
+
+                            <div class="inverter-card" data-inverter="4">
+                                <h4>AIMS Power 5000W</h4>
+                                <div class="inverter-specs">
+                                    <p><strong>Continuous Power:</strong> 5000W</p>
+                                    <p><strong>Surge Power:</strong> 10000W</p>
+                                    <p><strong>Input Voltage:</strong> 48V DC</p>
+                                    <p><strong>Efficiency:</strong> 90%</p>
+                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
+                                </div>
+                                <button class="select-inverter" data-inverter="4">Select This Inverter</button>
+                            </div>
+
+                            <div class="inverter-card" data-inverter="5">
+                                <h4>Samlex PST-3000-24</h4>
+                                <div class="inverter-specs">
+                                    <p><strong>Continuous Power:</strong> 3000W</p>
+                                    <p><strong>Surge Power:</strong> 9000W</p>
+                                    <p><strong>Input Voltage:</strong> 24V DC</p>
+                                    <p><strong>Efficiency:</strong> 92%</p>
+                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
+                                </div>
+                                <button class="select-inverter" data-inverter="5">Select This Inverter</button>
+                            </div>
+
+                            <div class="inverter-card" data-inverter="6">
+                                <h4>Go Power GP-3000HD</h4>
+                                <div class="inverter-specs">
+                                    <p><strong>Continuous Power:</strong> 3000W</p>
+                                    <p><strong>Surge Power:</strong> 6000W</p>
+                                    <p><strong>Input Voltage:</strong> 12V DC</p>
+                                    <p><strong>Efficiency:</strong> 89%</p>
+                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
+                                </div>
+                                <button class="select-inverter" data-inverter="6">Select This Inverter</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inverter-feedback" id="inverter-feedback" style="display: none;">
+                        <!-- Feedback will be dynamically populated -->
+                    </div>
+
+                    <div class="hints-panel">
+                        <button class="hint-btn" id="show-inverter-hints">Show Inverter Sizing Hints</button>
+                        <div class="hints-content" id="inverter-hints-content" style="display: none;">
+                            <h4>Inverter Sizing Guidelines:</h4>
+                            <div class="hints-visual">
+                                <img src="img/PV system component matching animation1.png" alt="Inverter Sizing Guide" class="hints-image">
+                            </div>
+                            <ul>
+                                <li><strong>Max AC Output:</strong> Should be ≥ Total AC load power for continuous operation</li>
+                                <li><strong>Surge Power:</strong> Must handle motor starting currents (typically 3-5x running power)</li>
+                                <li><strong>Input Voltage:</strong> Must match battery bank voltage (12V, 24V, 48V)</li>
+                                <li><strong>Efficiency:</strong> Higher efficiency reduces energy losses and heat</li>
+                                <li><strong>Load Analysis:</strong> Consider simultaneous loads vs. total connected loads</li>
+                                <li><strong>Future Expansion:</strong> Size for anticipated load growth (20-30% margin)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: System Simulation -->
+            <section id="simulation-section" class="section">
+                <div class="section-header">
+                    <h2>System Simulation</h2>
+                    <p>Analyze 24-hour system performance with interactive visualization</p>
+                </div>
+
+                <div class="simulation-container">
+                    <div class="simulation-controls">
+                        <h3>Simulation Parameters</h3>
+                        <div class="control-grid">
+                            <div class="control-item">
+                                <label>System Configuration:</label>
+                                <span id="sim-system-config">Based on your selections</span>
+                            </div>
+                            <div class="control-item">
+                                <label>Location:</label>
+                                <span id="sim-location">Phoenix, AZ</span>
+                            </div>
+                            <div class="control-item">
+                                <label>Weather Conditions:</label>
+                                <select id="weather-condition">
+                                    <option value="clear">Clear Sky (100% potential)</option>
+                                    <option value="partly_cloudy">Partly Cloudy (70-85% potential)</option>
+                                    <option value="overcast">Overcast (30% potential)</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <label>Season:</label>
+                                <select id="season-select">
+                                    <option value="summer">Summer</option>
+                                    <option value="spring">Spring/Fall</option>
+                                    <option value="winter">Winter</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button id="simulate-btn" class="simulate-button">Start 24-Hour Simulation</button>
+                    </div>
+
+                    <div id="simulation-results" class="simulation-results" style="display: none;">
+                        <h3>24-Hour System Performance</h3>
+                        
+                        <div class="chart-container">
+                            <canvas id="simulation-chart" width="800" height="400"></canvas>
+                        </div>
+                        
+                        <div class="simulation-summary">
+                            <h4>Daily Summary</h4>
+                            <div class="summary-stats">
+                                <div class="stat-box">
+                                    <span class="stat-value" id="daily-generation">0</span>
+                                    <span class="stat-label">kWh Generated</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-value" id="daily-consumption">0</span>
+                                    <span class="stat-label">kWh Consumed</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-value" id="net-energy">0</span>
+                                    <span class="stat-label">kWh Net Energy</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-value" id="battery-cycles">0</span>
+                                    <span class="stat-label">Battery Cycles</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="performance-insights">
+                            <h4>Performance Insights</h4>
+                            <ul id="insights-list">
+                                <li>System analysis will appear after simulation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal for Component Information -->
+    <div id="component-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Component Information</h2>
+            <div id="modal-body">
+                <!-- Content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Help/Educational Content -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="help-title">Educational Content</h2>
+            <div id="help-body">
+                <!-- Content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
