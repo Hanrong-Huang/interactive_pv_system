@@ -576,6 +576,19 @@ body {
     color: #d97706;
 }
 
+.result-item.derated-voltage {
+    border-color: #fbbf24;
+    background: #fefbf1;
+}
+
+.result-item.derated-voltage label {
+    color: #92400e;
+}
+
+.result-item.derated-voltage span {
+    color: #d97706;
+}
+
 .proceed-btn {
     width: 100%;
     padding: 1rem;
@@ -640,6 +653,19 @@ body {
 .summary-item span {
     color: #0c4a6e;
     font-weight: 700;
+}
+
+.summary-item.derated {
+    border-color: #fbbf24;
+    background: #fefbf1;
+}
+
+.summary-item.derated label {
+    color: #92400e;
+}
+
+.summary-item.derated span {
+    color: #d97706;
 }
 
 .controller-grid {

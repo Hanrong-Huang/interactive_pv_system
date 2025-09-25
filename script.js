@@ -105,7 +105,7 @@ let selectedPanelIndex = 0;
 let moduleSpecs = {
     model: solarPanels[0].name,
     pmax: solarPanels[0].power,
-    vm: solarPanels[0].vmp,
+    vmp: solarPanels[0].vmp,
     im: solarPanels[0].imp,
     voc: solarPanels[0].voc,
     isc: solarPanels[0].isc,
@@ -121,7 +121,9 @@ let calculatedArray = {
     power: 2100,
     voc: 98.4,
     isc: 27.21,
-    deratedPower: 2100
+    deratedPower: 2100,
+    deratedVoltage: 82.6,
+    deratedVoc: 98.4
 };
 
 // Component information for educational modals
@@ -137,7 +139,7 @@ const componentInfo = {
                 <h4>Key Parameters</h4>
                 <ul class="parameter-list">
                     <li><strong>Power Rating (Pmax):</strong> Maximum power output under Standard Test Conditions (1000 W/m², 25°C)</li>
-                    <li><strong>Voltage at Max Power (Vm):</strong> Operating voltage at maximum power point</li>
+                    <li><strong>Voltage at Max Power (Vmp):</strong> Operating voltage at maximum power point</li>
                     <li><strong>Current at Max Power (Im):</strong> Operating current at maximum power point</li>
                     <li><strong>Open Circuit Voltage (Voc):</strong> Maximum voltage when no current flows</li>
                     <li><strong>Short Circuit Current (Isc):</strong> Maximum current when voltage is zero</li>
@@ -318,6 +320,41 @@ const helpContent = {
             <div class="modal-section">
                 <h4>Practical Impact</h4>
                 <p>At 65°C cell temperature (common in hot climates), a panel with -0.38%/°C coefficient will produce about 85% of its rated power.</p>
+            </div>
+        `
+    },
+    tiltOptimization: {
+        title: 'Scientific Optimal Tilt Calculation',
+        content: `
+            <div class="modal-section">
+                <h4>Solar Geometry Principles</h4>
+                <p>Optimal tilt angle depends on your latitude and the sun's seasonal path. The sun's elevation varies by ±23.5° throughout the year due to Earth's tilt.</p>
+            </div>
+            <div class="modal-section">
+                <h4>Scientific Formula</h4>
+                <div class="modal-formula">
+                    <strong>Year-round Optimization:</strong><br>
+                    • Low latitudes (≤25°): Optimal Tilt ≈ Latitude - 2°<br>
+                    • Mid latitudes (25-50°): Optimal Tilt ≈ Latitude - 4°<br>
+                    • High latitudes (>50°): Optimal Tilt ≈ Latitude - 10°<br><br>
+                    <strong>Seasonal Optimization:</strong><br>
+                    • Summer focus: Latitude - 15° (flatter)<br>
+                    • Winter focus: Latitude + 15° (steeper)
+                </div>
+            </div>
+            <div class="modal-section">
+                <h4>Performance Impact</h4>
+                <ul class="parameter-list">
+                    <li><strong>±5° from optimal:</strong> <1% performance loss</li>
+                    <li><strong>±15° from optimal:</strong> ~5% performance loss</li>
+                    <li><strong>±30° from optimal:</strong> ~15% performance loss</li>
+                    <li><strong>Flat (0°):</strong> 10-25% loss depending on latitude</li>
+                </ul>
+            </div>
+            <div class="modal-section">
+                <h4>Practical Considerations</h4>
+                <p><strong>Fixed vs. Adjustable:</strong> Seasonal tilt adjustments can increase annual energy by 2-5%, but require manual intervention.</p>
+                <p><strong>Tracking Systems:</strong> Single-axis tracking can increase energy by 15-25%, dual-axis by 25-35%.</p>
             </div>
         `
     }
@@ -672,33 +709,87 @@ const dcLoads = [
     { name: 'Electronics', power: 30, hours: 16 }
 ];
 
-// Solar site data for major cities
-const solarSites = {
-    // United States (Northern Hemisphere)
-    'new_york': { name: 'New York, NY', lat: 40.7128, lon: -74.0060, ghi: 1400, optimalTilt: 33, optimalAzimuth: 180, peakSunHours: 4.0 },
-    'los_angeles': { name: 'Los Angeles, CA', lat: 34.0522, lon: -118.2437, ghi: 1900, optimalTilt: 34, optimalAzimuth: 180, peakSunHours: 5.2 },
-    'chicago': { name: 'Chicago, IL', lat: 41.8781, lon: -87.6298, ghi: 1350, optimalTilt: 38, optimalAzimuth: 180, peakSunHours: 3.8 },
-    'houston': { name: 'Houston, TX', lat: 29.7604, lon: -95.3698, ghi: 1650, optimalTilt: 28, optimalAzimuth: 180, peakSunHours: 4.5 },
-    'phoenix': { name: 'Phoenix, AZ', lat: 33.4484, lon: -112.0740, ghi: 2200, optimalTilt: 33, optimalAzimuth: 180, peakSunHours: 6.0 },
-    'miami': { name: 'Miami, FL', lat: 25.7617, lon: -80.1918, ghi: 1750, optimalTilt: 25, optimalAzimuth: 180, peakSunHours: 4.8 },
-    'denver': { name: 'Denver, CO', lat: 39.7392, lon: -104.9903, ghi: 1800, optimalTilt: 38, optimalAzimuth: 180, peakSunHours: 5.0 },
-    'seattle': { name: 'Seattle, WA', lat: 47.6062, lon: -122.3321, ghi: 1200, optimalTilt: 44, optimalAzimuth: 180, peakSunHours: 3.3 },
+// Scientific optimal tilt calculation based on solar geometry
+function calculateOptimalTilt(latitude, optimization = 'year_round') {
+    const lat = Math.abs(latitude); // Work with absolute latitude
     
-    // Australia (Southern Hemisphere) - North-facing optimal
-    'sydney': { name: 'Sydney, NSW', lat: -33.87, lon: 151.21, ghi: 1800, optimalTilt: 34, optimalAzimuth: 0, peakSunHours: 4.9 },
-    'melbourne': { name: 'Melbourne, VIC', lat: -37.81, lon: 144.96, ghi: 1550, optimalTilt: 38, optimalAzimuth: 0, peakSunHours: 4.2 },
-    'brisbane': { name: 'Brisbane, QLD', lat: -27.47, lon: 153.03, ghi: 1900, optimalTilt: 27, optimalAzimuth: 0, peakSunHours: 5.2 },
-    'perth': { name: 'Perth, WA', lat: -31.95, lon: 115.86, ghi: 1980, optimalTilt: 32, optimalAzimuth: 0, peakSunHours: 5.4 },
-    'adelaide': { name: 'Adelaide, SA', lat: -34.93, lon: 138.60, ghi: 1680, optimalTilt: 35, optimalAzimuth: 0, peakSunHours: 4.6 },
-    'canberra': { name: 'Canberra, ACT', lat: -35.28, lon: 149.13, ghi: 1760, optimalTilt: 35, optimalAzimuth: 0, peakSunHours: 4.8 }
+    switch (optimization) {
+        case 'summer':
+            // Optimize for summer months (higher sun angle)
+            return Math.max(0, lat - 15);
+        case 'winter':
+            // Optimize for winter months (lower sun angle)
+            return Math.min(90, lat + 15);
+        case 'year_round':
+        default:
+            // Optimized for maximum annual energy production
+            // Based on research: optimal tilt ≈ latitude - 3.7° for most locations
+            if (lat <= 25) return Math.max(0, lat - 2); // Low latitudes
+            if (lat <= 50) return Math.max(0, lat - 4); // Mid latitudes
+            return Math.max(0, lat - 10); // High latitudes (snow considerations)
+    }
+}
+
+// Calculate optimal azimuth (always towards equator)
+function calculateOptimalAzimuth(latitude) {
+    return latitude >= 0 ? 180 : 0; // South for Northern Hemisphere, North for Southern
+}
+
+// Get scientific explanation for optimal tilt calculation
+function getOptimalTiltExplanation(latitude, tilt) {
+    const lat = Math.abs(latitude);
+    const hemisphere = latitude >= 0 ? 'Northern' : 'Southern';
+    
+    let explanation = `**Scientific Basis for ${Math.round(tilt)}° Optimal Tilt:**\n\n`;
+    
+    explanation += `• **Location**: ${lat.toFixed(1)}° ${hemisphere} Hemisphere\n`;
+    explanation += `• **Solar Geometry**: Sun's path varies from ${lat-23.5}° to ${lat+23.5}° elevation throughout the year\n`;
+    explanation += `• **Optimal Angle**: Calculated as latitude minus 3-4° for maximum annual energy\n`;
+    
+    if (lat <= 25) {
+        explanation += `• **Low Latitude**: Near equator - minimal tilt variation impact\n`;
+    } else if (lat <= 50) {
+        explanation += `• **Mid Latitude**: Significant seasonal sun angle variation\n`;
+    } else {
+        explanation += `• **High Latitude**: Large seasonal variation - consider adjustable mounting\n`;
+    }
+    
+    explanation += `\n**Performance Trade-offs:**\n`;
+    explanation += `• Summer optimization: ${Math.max(0, lat-15)}° (flatter)\n`;
+    explanation += `• Winter optimization: ${Math.min(90, lat+15)}° (steeper)\n`;
+    explanation += `• Year-round balance: ${Math.round(tilt)}° (current optimal)`;
+    
+    return explanation;
+}
+
+// Solar site data for major cities (realistic values based on NREL and BoM data)
+// Optimal tilt calculated scientifically using solar geometry
+const solarSites = {
+    // United States (Northern Hemisphere) - GHI from NREL database
+    'new_york': { name: 'New York, NY', lat: 40.7128, lon: -74.0060, ghi: 1390, optimalTilt: Math.round(calculateOptimalTilt(40.7128)), optimalAzimuth: calculateOptimalAzimuth(40.7128), peakSunHours: 3.8 },
+    'los_angeles': { name: 'Los Angeles, CA', lat: 34.0522, lon: -118.2437, ghi: 1870, optimalTilt: Math.round(calculateOptimalTilt(34.0522)), optimalAzimuth: calculateOptimalAzimuth(34.0522), peakSunHours: 5.1 },
+    'chicago': { name: 'Chicago, IL', lat: 41.8781, lon: -87.6298, ghi: 1340, optimalTilt: Math.round(calculateOptimalTilt(41.8781)), optimalAzimuth: calculateOptimalAzimuth(41.8781), peakSunHours: 3.7 },
+    'houston': { name: 'Houston, TX', lat: 29.7604, lon: -95.3698, ghi: 1620, optimalTilt: Math.round(calculateOptimalTilt(29.7604)), optimalAzimuth: calculateOptimalAzimuth(29.7604), peakSunHours: 4.4 },
+    'phoenix': { name: 'Phoenix, AZ', lat: 33.4484, lon: -112.0740, ghi: 2070, optimalTilt: Math.round(calculateOptimalTilt(33.4484)), optimalAzimuth: calculateOptimalAzimuth(33.4484), peakSunHours: 5.7 },
+    'miami': { name: 'Miami, FL', lat: 25.7617, lon: -80.1918, ghi: 1710, optimalTilt: Math.round(calculateOptimalTilt(25.7617)), optimalAzimuth: calculateOptimalAzimuth(25.7617), peakSunHours: 4.7 },
+    'denver': { name: 'Denver, CO', lat: 39.7392, lon: -104.9903, ghi: 1750, optimalTilt: Math.round(calculateOptimalTilt(39.7392)), optimalAzimuth: calculateOptimalAzimuth(39.7392), peakSunHours: 4.8 },
+    'seattle': { name: 'Seattle, WA', lat: 47.6062, lon: -122.3321, ghi: 1170, optimalTilt: Math.round(calculateOptimalTilt(47.6062)), optimalAzimuth: calculateOptimalAzimuth(47.6062), peakSunHours: 3.2 },
+    
+    // Australia (Southern Hemisphere) - North-facing optimal, GHI from BoM data
+    'sydney': { name: 'Sydney, NSW', lat: -33.87, lon: 151.21, ghi: 1710, optimalTilt: Math.round(calculateOptimalTilt(-33.87)), optimalAzimuth: calculateOptimalAzimuth(-33.87), peakSunHours: 4.7 },
+    'melbourne': { name: 'Melbourne, VIC', lat: -37.81, lon: 144.96, ghi: 1460, optimalTilt: Math.round(calculateOptimalTilt(-37.81)), optimalAzimuth: calculateOptimalAzimuth(-37.81), peakSunHours: 4.0 },
+    'brisbane': { name: 'Brisbane, QLD', lat: -27.47, lon: 153.03, ghi: 1850, optimalTilt: Math.round(calculateOptimalTilt(-27.47)), optimalAzimuth: calculateOptimalAzimuth(-27.47), peakSunHours: 5.1 },
+    'perth': { name: 'Perth, WA', lat: -31.95, lon: 115.86, ghi: 1900, optimalTilt: Math.round(calculateOptimalTilt(-31.95)), optimalAzimuth: calculateOptimalAzimuth(-31.95), peakSunHours: 5.2 },
+    'adelaide': { name: 'Adelaide, SA', lat: -34.93, lon: 138.60, ghi: 1640, optimalTilt: Math.round(calculateOptimalTilt(-34.93)), optimalAzimuth: calculateOptimalAzimuth(-34.93), peakSunHours: 4.5 },
+    'canberra': { name: 'Canberra, ACT', lat: -35.28, lon: 149.13, ghi: 1690, optimalTilt: Math.round(calculateOptimalTilt(-35.28)), optimalAzimuth: calculateOptimalAzimuth(-35.28), peakSunHours: 4.6 }
 };
 
 // Global state for site analysis
 let siteAnalysis = {
     selectedLocation: 'phoenix',
-    tiltAngle: 33,
-    azimuthAngle: 180,
-    currentGHI: 2200
+    tiltAngle: Math.round(calculateOptimalTilt(33.4484)), // Phoenix latitude
+    azimuthAngle: calculateOptimalAzimuth(33.4484),
+    currentGHI: 2070
 };
 
 // Global state for system simulation
@@ -803,7 +894,7 @@ function showModal(modalId, title, content) {
 function calculateSeriesParallelOutput(seriesCount, parallelCount, moduleSpecs) {
     return {
         totalModules: seriesCount * parallelCount,
-        voltage: seriesCount * moduleSpecs.vm,
+        voltage: seriesCount * moduleSpecs.vmp,
         current: parallelCount * moduleSpecs.im,
         power: seriesCount * parallelCount * moduleSpecs.pmax,
         voc: seriesCount * moduleSpecs.voc,
@@ -815,6 +906,12 @@ function calculateTemperatureDerating(stcPower, cellTemp, tempCoeff) {
     const tempDifference = cellTemp - 25;
     const deratingFactor = 1 + (tempCoeff / 100) * tempDifference;
     return stcPower * deratingFactor;
+}
+
+function calculateVoltageDerating(stcVoltage, cellTemp, tempCoeffVoltage) {
+    const tempDifference = cellTemp - 25;
+    const deratingFactor = 1 + (tempCoeffVoltage / 100) * tempDifference;
+    return stcVoltage * deratingFactor;
 }
 
 // Array configuration functionality
@@ -886,13 +983,31 @@ function calculateArrayOutput() {
             moduleSpecs.tempCoeffPower
         );
         
+        // Derate both Vmp (operating voltage) and Voc (for safety calculations)
+        calculatedArray.deratedVoltage = calculateVoltageDerating(
+            output.voltage,
+            arrayConfig.cellTemperature,
+            moduleSpecs.tempCoeffVoltage
+        );
+        
+        calculatedArray.deratedVoc = calculateVoltageDerating(
+            output.voc,
+            arrayConfig.cellTemperature,
+            moduleSpecs.tempCoeffVoltage
+        );
+        
         // Show derated results
         document.querySelector('.result-item.derated').style.display = 'flex';
+        document.querySelector('.result-item.derated-voltage').style.display = 'flex';
         document.getElementById('derated-power').textContent = Math.round(calculatedArray.deratedPower) + 'W';
+        document.getElementById('derated-voltage').textContent = calculatedArray.deratedVoltage.toFixed(1) + 'V';
     } else {
         // Hide derated results
         document.querySelector('.result-item.derated').style.display = 'none';
+        document.querySelector('.result-item.derated-voltage').style.display = 'none';
         calculatedArray.deratedPower = output.power;
+        calculatedArray.deratedVoltage = output.voltage;
+        calculatedArray.deratedVoc = output.voc;
     }
     
     // Update display
@@ -931,8 +1046,39 @@ function updateArrayVisual() {
 
 function updateMPPTSummary() {
     // Update the MPPT section with current array values
-    document.getElementById('summary-power').textContent = calculatedArray.power + 'W';
-    document.getElementById('summary-voltage').textContent = calculatedArray.voltage.toFixed(1) + 'V';
+    // Show derated values when temperature is not 25°C, otherwise show STC values
+    const isDerated = arrayConfig.cellTemperature !== 25;
+    
+    // Get the summary item elements
+    const powerItem = document.getElementById('summary-power').closest('.summary-item');
+    const voltageItem = document.getElementById('summary-voltage').closest('.summary-item');
+    const currentItem = document.getElementById('summary-current').closest('.summary-item');
+    const vocItem = document.getElementById('summary-voc').closest('.summary-item');
+    const iscItem = document.getElementById('summary-isc').closest('.summary-item');
+    
+    if (isDerated) {
+        // Show derated power and voltage with indicators and styling
+        document.getElementById('summary-power').textContent = Math.round(calculatedArray.deratedPower) + 'W (derated)';
+        document.getElementById('summary-voltage').textContent = calculatedArray.deratedVoltage.toFixed(1) + 'V (derated)';
+        
+        // Apply derated styling
+        powerItem.classList.add('derated');
+        voltageItem.classList.add('derated');
+    } else {
+        // Show STC values
+        document.getElementById('summary-power').textContent = calculatedArray.power + 'W';
+        document.getElementById('summary-voltage').textContent = calculatedArray.voltage.toFixed(1) + 'V';
+        
+        // Remove derated styling
+        powerItem.classList.remove('derated');
+        voltageItem.classList.remove('derated');
+    }
+    
+    // Always remove derated styling from non-temperature dependent values
+    currentItem.classList.remove('derated');
+    vocItem.classList.remove('derated');
+    iscItem.classList.remove('derated');
+    
     document.getElementById('summary-current').textContent = calculatedArray.current.toFixed(2) + 'A';
     document.getElementById('summary-voc').textContent = calculatedArray.voc.toFixed(1) + 'V';
     document.getElementById('summary-isc').textContent = calculatedArray.isc.toFixed(2) + 'A';
@@ -1016,17 +1162,20 @@ function evaluateMPPTSelection(controllerId) {
     });
     
     // Improved evaluation criteria with temperature derating
-    const tempDeratedVoc = calculatedArray.voc * 1.2; // 20% safety margin for cold temperature
+    const actualVoc = calculatedArray.deratedVoc || calculatedArray.voc;
+    const tempDeratedVoc = actualVoc * 1.2; // 20% safety margin for cold temperature
     const voltageOk = controller.maxVoltage > tempDeratedVoc;
     const currentOk = controller.maxCurrent >= (calculatedArray.isc * 1.25); // 25% safety margin
     
-    // Power matching based on 48V system (most common)
+    // Power matching based on 48V system (most common) - use derated power
     const systemVoltage = 48;
-    const requiredControllerPower = calculatedArray.power * 0.8; // Allow 80% utilization
+    const actualArrayPower = calculatedArray.deratedPower || calculatedArray.power;
+    const requiredControllerPower = actualArrayPower * 0.8; // Allow 80% utilization
     const powerOk = controller.maxPower >= requiredControllerPower;
     
-    // MPPT range check
-    const mpptRangeOk = calculatedArray.voltage >= controller.mpptMin && calculatedArray.voltage <= controller.mpptMax;
+    // MPPT range check - use derated voltage for accurate assessment
+    const operatingVoltage = calculatedArray.deratedVoltage || calculatedArray.voltage;
+    const mpptRangeOk = operatingVoltage >= controller.mpptMin && operatingVoltage <= controller.mpptMax;
     
     const isCorrect = voltageOk && currentOk && powerOk && mpptRangeOk;
     
@@ -1050,17 +1199,17 @@ function evaluateMPPTSelection(controllerId) {
         feedbackContent += `
             <p><strong>Excellent choice!</strong> The ${controller.name} is properly sized for your PV array. Here's why this selection works:</p>
             <ul>
-                <li><strong>Voltage Safety:</strong> The controller's ${controller.maxVoltage}V maximum input safely exceeds your array's cold-weather Voc of ${tempDeratedVoc.toFixed(1)}V (${calculatedArray.voc.toFixed(1)}V × 1.2 safety factor)</li>
+                <li><strong>Voltage Safety:</strong> The controller's ${controller.maxVoltage}V maximum input safely exceeds your array's cold-weather Voc of ${tempDeratedVoc.toFixed(1)}V (${actualVoc.toFixed(1)}V × 1.2 safety factor)</li>
                 <li><strong>Current Handling:</strong> The ${controller.maxCurrent}A rating provides adequate capacity for your array's ${calculatedArray.isc.toFixed(2)}A short-circuit current with 25% safety margin</li>
-                <li><strong>Power Capacity:</strong> Sufficient power handling for your ${requiredControllerPower.toFixed(0)}W minimum requirement (80% of ${calculatedArray.power}W array)</li>
-                <li><strong>MPPT Range:</strong> Your array's operating voltage of ${calculatedArray.voltage.toFixed(1)}V falls within the MPPT range of ${controller.mpptMin}V to ${controller.mpptMax}V</li>
+                <li><strong>Power Capacity:</strong> Sufficient power handling for your ${requiredControllerPower.toFixed(0)}W minimum requirement (80% of ${actualArrayPower}W array)</li>
+                <li><strong>MPPT Range:</strong> Your array's operating voltage of ${operatingVoltage.toFixed(1)}V falls within the MPPT range of ${controller.mpptMin}V to ${controller.mpptMax}V</li>
             </ul>
         `;
     } else {
         feedbackContent += `<p><strong>This controller is not suitable for your array.</strong> Here are the issues:</p><ul>`;
         
         if (!voltageOk) {
-            feedbackContent += `<li><strong>Voltage Exceeded:</strong> Your array's cold-weather Voc of ${tempDeratedVoc.toFixed(1)}V (including safety margin) exceeds the controller's ${controller.maxVoltage}V maximum. This could damage the controller.</li>`;
+            feedbackContent += `<li><strong>Voltage Exceeded:</strong> Your array's cold-weather Voc of ${tempDeratedVoc.toFixed(1)}V (${actualVoc.toFixed(1)}V × 1.2 safety margin) exceeds the controller's ${controller.maxVoltage}V maximum. This could damage the controller.</li>`;
         }
         
         if (!currentOk) {
@@ -1068,24 +1217,26 @@ function evaluateMPPTSelection(controllerId) {
         }
         
         if (!powerOk) {
-            feedbackContent += `<li><strong>Power Limitation:</strong> Your array requires at least ${requiredControllerPower.toFixed(0)}W controller capacity, but this controller only provides ${controller.maxPower}W.</li>`;
+            feedbackContent += `<li><strong>Power Limitation:</strong> Your array requires at least ${requiredControllerPower.toFixed(0)}W controller capacity (80% of ${actualArrayPower}W), but this controller only provides ${controller.maxPower}W.</li>`;
         }
         
         if (!mpptRangeOk) {
-            feedbackContent += `<li><strong>MPPT Range Issue:</strong> Your array's operating voltage of ${calculatedArray.voltage.toFixed(1)}V falls outside the MPPT range of ${controller.mpptMin}V to ${controller.mpptMax}V.</li>`;
+            feedbackContent += `<li><strong>MPPT Range Issue:</strong> Your array's operating voltage of ${operatingVoltage.toFixed(1)}V falls outside the MPPT range of ${controller.mpptMin}V to ${controller.mpptMax}V.</li>`;
         }
         
         feedbackContent += '</ul>';
     }
     
+    const temperatureNote = arrayConfig.cellTemperature !== 25 ? ` (at ${arrayConfig.cellTemperature}°C)` : ' (STC)';
+    
     feedbackContent += `
         <div class="feedback-formula">
-            <strong>Key Sizing Rules:</strong><br>
-            ✓ Controller Max Voltage > Array Voc × 1.2 (${calculatedArray.voc.toFixed(1)} × 1.2 = ${(calculatedArray.voc * 1.2).toFixed(1)}V)<br>
-            ${voltageOk ? '✓' : '✗'} Voltage Safety: Controller max voltage (${controller.maxVoltage}V) > Array Voc (${calculatedArray.voc.toFixed(1)}V)<br>
+            <strong>Key Sizing Rules${temperatureNote}:</strong><br>
+            ✓ Controller Max Voltage > Array Voc × 1.2 (${actualVoc.toFixed(1)} × 1.2 = ${tempDeratedVoc.toFixed(1)}V)<br>
+            ${voltageOk ? '✓' : '✗'} Voltage Safety: Controller max voltage (${controller.maxVoltage}V) > Array Voc (${actualVoc.toFixed(1)}V)<br>
             ${currentOk ? '✓' : '✗'} Current Check: Controller max current (${controller.maxCurrent}A) > Array Isc × 1.25 (${(calculatedArray.isc * 1.25).toFixed(2)}A)<br>
-            ${powerOk ? '✓' : '✗'} Power Compatibility: Controller max power (${controller.maxPower}W) > Array power (${calculatedArray.power}W)<br>
-            ${mpptRangeOk ? '✓' : '✗'} MPPT Range: Array Vmp (${calculatedArray.voltage.toFixed(1)}V) within MPPT range (${controller.mpptMin}-${controller.mpptMax}V)
+            ${powerOk ? '✓' : '✗'} Power Compatibility: Controller max power (${controller.maxPower}W) > Array power (${actualArrayPower}W${temperatureNote})<br>
+            ${mpptRangeOk ? '✓' : '✗'} MPPT Range: Array Vmp (${operatingVoltage.toFixed(1)}V${temperatureNote}) within MPPT range (${controller.mpptMin}-${controller.mpptMax}V)
         </div>
     `;
     
@@ -1256,7 +1407,7 @@ function updateModuleSpecs() {
     moduleSpecs = {
         model: selectedPanel.name,
         pmax: selectedPanel.power,
-        vm: selectedPanel.vmp,
+        vmp: selectedPanel.vmp,
         im: selectedPanel.imp,
         voc: selectedPanel.voc,
         isc: selectedPanel.isc,
@@ -1326,7 +1477,14 @@ function updateSiteAnalysis() {
     
     // Calculate performance metrics using actual array power from global state
     const arrayPower = globalSystemState.arrayPower || calculatedArray.power || 2000;
-    const annualGeneration = (siteAnalysis.currentGHI * arrayPower / 1000).toFixed(0);
+    
+    // More realistic annual generation calculation including system losses
+    const systemEfficiency = 0.85; // Account for inverter losses, wiring losses, soiling, etc.
+    const dcToAcRatio = 1.2; // Typical DC to AC ratio for good system design
+    const effectiveArrayPower = Math.min(arrayPower, arrayPower / dcToAcRatio);
+    
+    // Annual generation = GHI × Array Power × System Efficiency ÷ STC irradiance (1000 W/m²)
+    const annualGeneration = (siteAnalysis.currentGHI * effectiveArrayPower * systemEfficiency / 1000).toFixed(0);
     const performanceRatio = (tiltFactor * azimuthFactor * 100).toFixed(1);
     const irradiationFactor = (tiltFactor * azimuthFactor).toFixed(2);
     
@@ -1388,15 +1546,32 @@ function updateSiteAnalysis() {
 
 function calculateTiltFactor(currentTilt, optimalTilt) {
     const difference = Math.abs(currentTilt - optimalTilt);
-    return Math.max(0.7, 1 - (difference / 90) * 0.3);
+    // More realistic tilt factor based on cosine losses
+    // Performance drops more significantly with larger deviations
+    if (difference <= 5) return 1.0;
+    if (difference <= 10) return 0.98;
+    if (difference <= 15) return 0.95;
+    if (difference <= 20) return 0.91;
+    if (difference <= 30) return 0.85;
+    if (difference <= 45) return 0.78;
+    return Math.max(0.65, 0.95 - (difference - 10) * 0.008);
 }
 
 function calculateAzimuthFactor(azimuth, optimalAzimuth) {
     const deviation = Math.abs(azimuth - optimalAzimuth);
     // Handle circular nature of compass (e.g., 350° is close to 10°)
     const circularDeviation = Math.min(deviation, 360 - deviation);
-    return Math.max(0.8, 1 - (circularDeviation / 180) * 0.2);
+    
+    // More realistic azimuth factor - east/west facing can lose 10-15%
+    if (circularDeviation <= 10) return 1.0;
+    if (circularDeviation <= 30) return 0.97;
+    if (circularDeviation <= 45) return 0.93;
+    if (circularDeviation <= 60) return 0.89;
+    if (circularDeviation <= 90) return 0.85; // East/West facing
+    if (circularDeviation <= 135) return 0.75;
+    return Math.max(0.55, 0.95 - circularDeviation * 0.0035); // North-facing in northern hemisphere
 }
+
 
 function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHemisphere) {
     const recommendations = [];
@@ -1433,19 +1608,31 @@ function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHe
         recommendations.push("Poor orientation - significant performance loss");
     }
     
-    // Seasonal recommendations
-    if (Math.abs(site.lat) > 35) {
-        recommendations.push("Consider seasonal tilt adjustments at this latitude");
+    // Seasonal recommendations with specific guidance
+    if (Math.abs(site.lat) > 40) {
+        recommendations.push("High latitude location: Consider seasonal tilt adjustments (latitude ±15°) or tracking systems");
+    } else if (Math.abs(site.lat) > 35) {
+        recommendations.push("Consider seasonal tilt adjustments: steeper in winter, flatter in summer");
     }
     
-    // Climate-specific recommendations
-    if (site.ghi > 2000) {
-        recommendations.push("Excellent solar resource location");
+    // Climate-specific recommendations with context
+    if (site.ghi > 1900) {
+        recommendations.push(`Excellent solar resource (${site.ghi} kWh/m²/year) - among the best globally`);
     } else if (site.ghi > 1600) {
-        recommendations.push("Good solar resource location");
+        recommendations.push(`Good solar resource (${site.ghi} kWh/m²/year) - well above global average`);
+    } else if (site.ghi > 1300) {
+        recommendations.push(`Moderate solar resource (${site.ghi} kWh/m²/year) - similar to central Europe`);
     } else {
-        recommendations.push("Moderate solar resource - maximize system efficiency");
+        recommendations.push(`Lower solar resource (${site.ghi} kWh/m²/year) - focus on system efficiency and orientation`);
     }
+    
+    // Add practical installation advice
+    if (overallFactor < 0.85) {
+        recommendations.push("Current orientation reduces output by >15% - consider roof constraints vs. performance trade-offs");
+    }
+    
+    // Add shading consideration
+    recommendations.push("Ensure panels are free from shading during peak sun hours (9 AM - 3 PM)");
     
     // Update display
     const recommendationsList = document.getElementById('site-recommendations-list');
@@ -1876,7 +2063,7 @@ function animatePowerFlow() {
 function updateGlobalSystemState() {
     // Update array values from calculated results
     globalSystemState.arrayPower = calculatedArray.deratedPower || calculatedArray.power;
-    globalSystemState.arrayVoltage = calculatedArray.voltage;
+    globalSystemState.arrayVoltage = calculatedArray.deratedVoltage || calculatedArray.voltage;
     globalSystemState.arrayCurrent = calculatedArray.current;
     globalSystemState.totalModules = calculatedArray.totalModules;
     
