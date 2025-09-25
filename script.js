@@ -308,12 +308,17 @@ const helpContent = {
                 </ul>
             </div>
             <div class="modal-section">
-                <h4>Derating Formula</h4>
+                <h4>Derating Formulas</h4>
                 <div class="modal-formula">
+                    <strong>Power Derating:</strong><br>
                     Derated_Power = STC_Power × (1 + (Temp_Coeff ÷ 100) × (T_cell - 25))<br><br>
+                    <strong>Voltage Derating:</strong><br>
+                    Derated_Voltage = STC_Voltage × (1 + (Voltage_Temp_Coeff ÷ 100) × (T_cell - 25))<br><br>
                     Where:<br>
                     - STC_Power = Standard Test Condition power<br>
-                    - Temp_Coeff = Temperature coefficient (%/°C)<br>
+                    - STC_Voltage = Standard Test Condition voltage (Vmp)<br>
+                    - Temp_Coeff = Temperature coefficient for power (%/°C)<br>
+                    - Voltage_Temp_Coeff = Temperature coefficient for voltage (%/°C)<br>
                     - T_cell = Cell temperature (°C)
                 </div>
             </div>
