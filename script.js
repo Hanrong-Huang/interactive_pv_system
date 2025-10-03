@@ -740,53 +740,99 @@ function calculateOptimalAzimuth(latitude) {
     return latitude >= 0 ? 180 : 0; // South for Northern Hemisphere, North for Southern
 }
 
-// Get scientific explanation for optimal tilt calculation
-function getOptimalTiltExplanation(latitude, tilt) {
-    const lat = Math.abs(latitude);
-    const hemisphere = latitude >= 0 ? 'Northern' : 'Southern';
-    
-    let explanation = `**Scientific Basis for ${Math.round(tilt)}° Optimal Tilt:**\n\n`;
-    
-    explanation += `• **Location**: ${lat.toFixed(1)}° ${hemisphere} Hemisphere\n`;
-    explanation += `• **Solar Geometry**: Sun's path varies from ${lat-23.5}° to ${lat+23.5}° elevation throughout the year\n`;
-    explanation += `• **Optimal Angle**: Calculated as latitude minus 3-4° for maximum annual energy\n`;
-    
-    if (lat <= 25) {
-        explanation += `• **Low Latitude**: Near equator - minimal tilt variation impact\n`;
-    } else if (lat <= 50) {
-        explanation += `• **Mid Latitude**: Significant seasonal sun angle variation\n`;
-    } else {
-        explanation += `• **High Latitude**: Large seasonal variation - consider adjustable mounting\n`;
-    }
-    
-    explanation += `\n**Performance Trade-offs:**\n`;
-    explanation += `• Summer optimization: ${Math.max(0, lat-15)}° (flatter)\n`;
-    explanation += `• Winter optimization: ${Math.min(90, lat+15)}° (steeper)\n`;
-    explanation += `• Year-round balance: ${Math.round(tilt)}° (current optimal)`;
-    
-    return explanation;
-}
-
 // Solar site data for major cities (realistic values based on NREL and BoM data)
 // Optimal tilt calculated scientifically using solar geometry
+// Solar irradiance data from NASA POWER (2024)
+// GHI: Global Horizontal Irradiance, DNI: Direct Normal Irradiance, DHI: Diffuse Horizontal Irradiance
+// All values in kWh/m²/year
 const solarSites = {
-    // United States (Northern Hemisphere) - GHI from NREL database
-    'new_york': { name: 'New York, NY', lat: 40.7128, lon: -74.0060, ghi: 1390, optimalTilt: Math.round(calculateOptimalTilt(40.7128)), optimalAzimuth: calculateOptimalAzimuth(40.7128), peakSunHours: 3.8 },
-    'los_angeles': { name: 'Los Angeles, CA', lat: 34.0522, lon: -118.2437, ghi: 1870, optimalTilt: Math.round(calculateOptimalTilt(34.0522)), optimalAzimuth: calculateOptimalAzimuth(34.0522), peakSunHours: 5.1 },
-    'chicago': { name: 'Chicago, IL', lat: 41.8781, lon: -87.6298, ghi: 1340, optimalTilt: Math.round(calculateOptimalTilt(41.8781)), optimalAzimuth: calculateOptimalAzimuth(41.8781), peakSunHours: 3.7 },
-    'houston': { name: 'Houston, TX', lat: 29.7604, lon: -95.3698, ghi: 1620, optimalTilt: Math.round(calculateOptimalTilt(29.7604)), optimalAzimuth: calculateOptimalAzimuth(29.7604), peakSunHours: 4.4 },
-    'phoenix': { name: 'Phoenix, AZ', lat: 33.4484, lon: -112.0740, ghi: 2070, optimalTilt: Math.round(calculateOptimalTilt(33.4484)), optimalAzimuth: calculateOptimalAzimuth(33.4484), peakSunHours: 5.7 },
-    'miami': { name: 'Miami, FL', lat: 25.7617, lon: -80.1918, ghi: 1710, optimalTilt: Math.round(calculateOptimalTilt(25.7617)), optimalAzimuth: calculateOptimalAzimuth(25.7617), peakSunHours: 4.7 },
-    'denver': { name: 'Denver, CO', lat: 39.7392, lon: -104.9903, ghi: 1750, optimalTilt: Math.round(calculateOptimalTilt(39.7392)), optimalAzimuth: calculateOptimalAzimuth(39.7392), peakSunHours: 4.8 },
-    'seattle': { name: 'Seattle, WA', lat: 47.6062, lon: -122.3321, ghi: 1170, optimalTilt: Math.round(calculateOptimalTilt(47.6062)), optimalAzimuth: calculateOptimalAzimuth(47.6062), peakSunHours: 3.2 },
-    
-    // Australia (Southern Hemisphere) - North-facing optimal, GHI from BoM data
-    'sydney': { name: 'Sydney, NSW', lat: -33.87, lon: 151.21, ghi: 1710, optimalTilt: Math.round(calculateOptimalTilt(-33.87)), optimalAzimuth: calculateOptimalAzimuth(-33.87), peakSunHours: 4.7 },
-    'melbourne': { name: 'Melbourne, VIC', lat: -37.81, lon: 144.96, ghi: 1460, optimalTilt: Math.round(calculateOptimalTilt(-37.81)), optimalAzimuth: calculateOptimalAzimuth(-37.81), peakSunHours: 4.0 },
-    'brisbane': { name: 'Brisbane, QLD', lat: -27.47, lon: 153.03, ghi: 1850, optimalTilt: Math.round(calculateOptimalTilt(-27.47)), optimalAzimuth: calculateOptimalAzimuth(-27.47), peakSunHours: 5.1 },
-    'perth': { name: 'Perth, WA', lat: -31.95, lon: 115.86, ghi: 1900, optimalTilt: Math.round(calculateOptimalTilt(-31.95)), optimalAzimuth: calculateOptimalAzimuth(-31.95), peakSunHours: 5.2 },
-    'adelaide': { name: 'Adelaide, SA', lat: -34.93, lon: 138.60, ghi: 1640, optimalTilt: Math.round(calculateOptimalTilt(-34.93)), optimalAzimuth: calculateOptimalAzimuth(-34.93), peakSunHours: 4.5 },
-    'canberra': { name: 'Canberra, ACT', lat: -35.28, lon: 149.13, ghi: 1690, optimalTilt: Math.round(calculateOptimalTilt(-35.28)), optimalAzimuth: calculateOptimalAzimuth(-35.28), peakSunHours: 4.6 }
+    // United States (Northern Hemisphere)
+    'phoenix': {
+        name: 'Phoenix, AZ', lat: 33.4484, lon: -112.0740,
+        ghi: 2124, dni: 2764, dhi: 471,  // NASA POWER 2024
+        optimalTilt: Math.round(calculateOptimalTilt(33.4484)),
+        optimalAzimuth: calculateOptimalAzimuth(33.4484)
+    },
+    'los_angeles': {
+        name: 'Los Angeles, CA', lat: 34.0522, lon: -118.2437,
+        ghi: 1913, dni: 2190, dhi: 595,
+        optimalTilt: Math.round(calculateOptimalTilt(34.0522)),
+        optimalAzimuth: calculateOptimalAzimuth(34.0522)
+    },
+    'miami': {
+        name: 'Miami, FL', lat: 25.7617, lon: -80.1918,
+        ghi: 1781, dni: 1825, dhi: 698,
+        optimalTilt: Math.round(calculateOptimalTilt(25.7617)),
+        optimalAzimuth: calculateOptimalAzimuth(25.7617)
+    },
+    'houston': {
+        name: 'Houston, TX', lat: 29.7604, lon: -95.3698,
+        ghi: 1642, dni: 1590, dhi: 730,
+        optimalTilt: Math.round(calculateOptimalTilt(29.7604)),
+        optimalAzimuth: calculateOptimalAzimuth(29.7604)
+    },
+    'denver': {
+        name: 'Denver, CO', lat: 39.7392, lon: -104.9903,
+        ghi: 1798, dni: 2285, dhi: 542,
+        optimalTilt: Math.round(calculateOptimalTilt(39.7392)),
+        optimalAzimuth: calculateOptimalAzimuth(39.7392)
+    },
+    'new_york': {
+        name: 'New York, NY', lat: 40.7128, lon: -74.0060,
+        ghi: 1459, dni: 1517, dhi: 598,  // NASA POWER 2024
+        optimalTilt: Math.round(calculateOptimalTilt(40.7128)),
+        optimalAzimuth: calculateOptimalAzimuth(40.7128)
+    },
+    'chicago': {
+        name: 'Chicago, IL', lat: 41.8781, lon: -87.6298,
+        ghi: 1402, dni: 1498, dhi: 590,
+        optimalTilt: Math.round(calculateOptimalTilt(41.8781)),
+        optimalAzimuth: calculateOptimalAzimuth(41.8781)
+    },
+    'seattle': {
+        name: 'Seattle, WA', lat: 47.6062, lon: -122.3321,
+        ghi: 1198, dni: 1095, dhi: 658,
+        optimalTilt: Math.round(calculateOptimalTilt(47.6062)),
+        optimalAzimuth: calculateOptimalAzimuth(47.6062)
+    },
+
+    // Australia (Southern Hemisphere) - North-facing optimal
+    'sydney': {
+        name: 'Sydney, NSW', lat: -33.87, lon: 151.21,
+        ghi: 1675, dni: 1654, dhi: 577,  // NASA POWER 2024
+        optimalTilt: Math.round(calculateOptimalTilt(-33.87)),
+        optimalAzimuth: calculateOptimalAzimuth(-33.87)
+    },
+    'melbourne': {
+        name: 'Melbourne, VIC', lat: -37.81, lon: 144.96,
+        ghi: 1502, dni: 1420, dhi: 612,
+        optimalTilt: Math.round(calculateOptimalTilt(-37.81)),
+        optimalAzimuth: calculateOptimalAzimuth(-37.81)
+    },
+    'brisbane': {
+        name: 'Brisbane, QLD', lat: -27.47, lon: 153.03,
+        ghi: 1832, dni: 1695, dhi: 650,
+        optimalTilt: Math.round(calculateOptimalTilt(-27.47)),
+        optimalAzimuth: calculateOptimalAzimuth(-27.47)
+    },
+    'perth': {
+        name: 'Perth, WA', lat: -31.95, lon: 115.86,
+        ghi: 1945, dni: 2105, dhi: 570,
+        optimalTilt: Math.round(calculateOptimalTilt(-31.95)),
+        optimalAzimuth: calculateOptimalAzimuth(-31.95)
+    },
+    'adelaide': {
+        name: 'Adelaide, SA', lat: -34.93, lon: 138.60,
+        ghi: 1688, dni: 1810, dhi: 585,
+        optimalTilt: Math.round(calculateOptimalTilt(-34.93)),
+        optimalAzimuth: calculateOptimalAzimuth(-34.93)
+    },
+    'canberra': {
+        name: 'Canberra, ACT', lat: -35.28, lon: 149.13,
+        ghi: 1712, dni: 1755, dhi: 595,
+        optimalTilt: Math.round(calculateOptimalTilt(-35.28)),
+        optimalAzimuth: calculateOptimalAzimuth(-35.28)
+    }
 };
 
 // Global state for site analysis
@@ -832,18 +878,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Helper function to update active navigation button
+function updateActiveNavButton(sectionName) {
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.querySelector(`[data-section="${sectionName}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
+}
+
 // Navigation functionality
 function initializeNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
-    
+
     navButtons.forEach(button => {
         button.addEventListener('click', function() {
             const targetSection = this.getAttribute('data-section');
             showSection(targetSection);
-            
-            // Update active button
-            navButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
+            updateActiveNavButton(targetSection);
         });
     });
 }
@@ -853,15 +903,53 @@ function showSection(sectionName) {
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
     });
-    
+
     // Show target section
     const targetSection = document.getElementById(sectionName + '-section');
     if (targetSection) {
         targetSection.classList.add('active');
         currentSection = sectionName;
-        
-        // Initialize specific sections can be added here if needed
+
+        // Regenerate dynamic content when navigating to these sections
+        if (sectionName === 'array-configuration') {
+            updateArrayVisual();
+            calculateArrayOutput();
+        } else if (sectionName === 'mppt-selection') {
+            generateControllerCards();
+            initializeMPPTHints();
+        } else if (sectionName === 'inverter-selection') {
+            generateInverterCards();
+            initializeInverterHints();
+        } else if (sectionName === 'simulation') {
+            initializeSystemSimulation();
+        }
     }
+}
+
+// Generic helper function for hints button initialization
+function initializeHintsButton(buttonId, contentId, showText, hideText) {
+    const hintsBtn = document.getElementById(buttonId);
+    const hintsContent = document.getElementById(contentId);
+
+    if (hintsBtn && hintsContent) {
+        // Remove old listeners by cloning
+        const newHintsBtn = hintsBtn.cloneNode(true);
+        hintsBtn.parentNode.replaceChild(newHintsBtn, hintsBtn);
+
+        newHintsBtn.addEventListener('click', function() {
+            const isVisible = hintsContent.style.display === 'block';
+            hintsContent.style.display = isVisible ? 'none' : 'block';
+            this.textContent = isVisible ? showText : hideText;
+        });
+    }
+}
+
+function initializeMPPTHints() {
+    initializeHintsButton('show-hints', 'hints-content', 'Show Sizing Hints', 'Hide Sizing Hints');
+}
+
+function initializeInverterHints() {
+    initializeHintsButton('show-inverter-hints', 'inverter-hints-content', 'Show Inverter Sizing Hints', 'Hide Inverter Sizing Hints');
 }
 
 // Modal functionality
@@ -919,6 +1007,12 @@ function calculateVoltageDerating(stcVoltage, cellTemp, tempCoeffVoltage) {
     return stcVoltage * deratingFactor;
 }
 
+function calculateCurrentDerating(stcCurrent, cellTemp, tempCoeffCurrent) {
+    const tempDifference = cellTemp - 25;
+    const deratingFactor = 1 + (tempCoeffCurrent / 100) * tempDifference;
+    return stcCurrent * deratingFactor;
+}
+
 // Array configuration functionality
 function initializeArrayConfiguration() {
     const seriesInput = document.getElementById('series-modules');
@@ -945,11 +1039,9 @@ function initializeArrayConfiguration() {
     if (proceedBtn) {
         proceedBtn.addEventListener('click', function() {
             updateMPPTSummary();
+            generateControllerCards();  // Regenerate cards when entering section
             showSection('mppt-selection');
-            
-            // Update navigation properly
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-section="mppt-selection"]').classList.add('active');
+            updateActiveNavButton('mppt-selection');
         });
     }
 }
@@ -958,71 +1050,97 @@ function updateArrayConfiguration() {
     const seriesCount = parseInt(document.getElementById('series-modules').value) || 1;
     const parallelCount = parseInt(document.getElementById('parallel-strings').value) || 1;
     const cellTemp = parseFloat(document.getElementById('cell-temperature').value) || 25;
-    
+
     arrayConfig.seriesModules = seriesCount;
     arrayConfig.parallelStrings = parallelCount;
     arrayConfig.cellTemperature = cellTemp;
-    
+
     calculateArrayOutput();
     updateArrayVisual();
-    
+
     // Update global system state and diagram
     updateGlobalSystemState();
     updateDynamicDiagram();
+
+    // Update site analysis to recalculate temperature loss and PR
+    updateSiteAnalysis();
 }
 
 function calculateArrayOutput() {
     const output = calculateSeriesParallelOutput(
-        arrayConfig.seriesModules, 
-        arrayConfig.parallelStrings, 
+        arrayConfig.seriesModules,
+        arrayConfig.parallelStrings,
         moduleSpecs
     );
-    
+
     calculatedArray = output;
-    
+
+    // Update Total Modules in Array Configuration section
+    document.getElementById('total-modules-config').textContent = output.totalModules;
+
+    // Update Row 1: STC Conditions (always visible)
+    document.getElementById('array-power-stc').textContent = Math.round(output.power) + 'W';
+    document.getElementById('array-voltage-stc').textContent = output.voltage.toFixed(1) + 'V';
+    document.getElementById('array-current-stc').textContent = output.current.toFixed(1) + 'A';
+    document.getElementById('array-voc-stc').textContent = output.voc.toFixed(1) + 'V';
+    document.getElementById('array-isc-stc').textContent = output.isc.toFixed(1) + 'A';
+
     // Apply temperature derating if temperature is not 25°C
-    if (arrayConfig.cellTemperature !== 25) {
+    const isDerated = arrayConfig.cellTemperature !== 25;
+
+    if (isDerated) {
+        // Calculate all derated parameters
         calculatedArray.deratedPower = calculateTemperatureDerating(
             output.power,
             arrayConfig.cellTemperature,
             moduleSpecs.tempCoeffPower
         );
-        
-        // Derate both Vmp (operating voltage) and Voc (for safety calculations)
+
         calculatedArray.deratedVoltage = calculateVoltageDerating(
             output.voltage,
             arrayConfig.cellTemperature,
             moduleSpecs.tempCoeffVoltage
         );
-        
+
         calculatedArray.deratedVoc = calculateVoltageDerating(
             output.voc,
             arrayConfig.cellTemperature,
             moduleSpecs.tempCoeffVoltage
         );
-        
-        // Show derated results
-        document.querySelector('.result-item.derated').style.display = 'flex';
-        document.querySelector('.result-item.derated-voltage').style.display = 'flex';
-        document.getElementById('derated-power').textContent = Math.round(calculatedArray.deratedPower) + 'W';
-        document.getElementById('derated-voltage').textContent = calculatedArray.deratedVoltage.toFixed(1) + 'V';
+
+        // Current increases with temperature (positive coefficient)
+        calculatedArray.deratedCurrent = calculateCurrentDerating(
+            output.current,
+            arrayConfig.cellTemperature,
+            moduleSpecs.tempCoeffCurrent
+        );
+
+        calculatedArray.deratedIsc = calculateCurrentDerating(
+            output.isc,
+            arrayConfig.cellTemperature,
+            moduleSpecs.tempCoeffCurrent
+        );
+
+        // Show Row 2: Derated conditions
+        document.getElementById('derated-row').style.display = 'block';
+        document.getElementById('derated-temp').textContent = arrayConfig.cellTemperature;
+        document.getElementById('array-power-derated').textContent = Math.round(calculatedArray.deratedPower) + 'W';
+        document.getElementById('array-voltage-derated').textContent = calculatedArray.deratedVoltage.toFixed(1) + 'V';
+        document.getElementById('array-current-derated').textContent = calculatedArray.deratedCurrent.toFixed(1) + 'A';
+        document.getElementById('array-voc-derated').textContent = calculatedArray.deratedVoc.toFixed(1) + 'V';
+        document.getElementById('array-isc-derated').textContent = calculatedArray.deratedIsc.toFixed(1) + 'A';
     } else {
-        // Hide derated results
-        document.querySelector('.result-item.derated').style.display = 'none';
-        document.querySelector('.result-item.derated-voltage').style.display = 'none';
+        // Hide Row 2: Derated conditions
+        document.getElementById('derated-row').style.display = 'none';
+
+        // Set derated values equal to STC values
         calculatedArray.deratedPower = output.power;
         calculatedArray.deratedVoltage = output.voltage;
         calculatedArray.deratedVoc = output.voc;
+        calculatedArray.deratedCurrent = output.current;
+        calculatedArray.deratedIsc = output.isc;
     }
-    
-    // Update display
-    document.getElementById('total-modules').textContent = output.totalModules;
-    document.getElementById('array-voltage').textContent = output.voltage.toFixed(1) + 'V';
-    document.getElementById('array-current').textContent = output.current.toFixed(2) + 'A';
-    document.getElementById('array-power').textContent = output.power + 'W';
-    document.getElementById('array-voc').textContent = output.voc.toFixed(1) + 'V';
-    document.getElementById('array-isc').textContent = output.isc.toFixed(2) + 'A';
-    
+
     // Update global system state
     updateGlobalSystemState();
     updateDynamicDiagram();
@@ -1030,17 +1148,20 @@ function calculateArrayOutput() {
 
 function updateArrayVisual() {
     const visualContainer = document.getElementById('array-visual');
+    if (!visualContainer) return; // Exit if element doesn't exist yet
+
     visualContainer.innerHTML = '';
-    
+
     const seriesCount = arrayConfig.seriesModules;
     const parallelCount = arrayConfig.parallelStrings;
-    
-    // Set grid template
-    visualContainer.style.gridTemplateColumns = `repeat(${seriesCount}, 1fr)`;
-    
+
+    // Set grid template - parallel strings go horizontally (columns)
+    visualContainer.style.gridTemplateColumns = `repeat(${parallelCount}, 1fr)`;
+
     // Create visual modules
-    for (let string = 0; string < parallelCount; string++) {
-        for (let module = 0; module < seriesCount; module++) {
+    // Parallel strings are columns, series modules are rows
+    for (let module = 0; module < seriesCount; module++) {
+        for (let string = 0; string < parallelCount; string++) {
             const moduleDiv = document.createElement('div');
             moduleDiv.className = 'module-visual';
             moduleDiv.title = `String ${string + 1}, Module ${module + 1}`;
@@ -1053,56 +1174,44 @@ function updateMPPTSummary() {
     // Update the MPPT section with current array values
     // Show derated values when temperature is not 25°C, otherwise show STC values
     const isDerated = arrayConfig.cellTemperature !== 25;
-    
-    // Get the summary item elements
-    const powerItem = document.getElementById('summary-power').closest('.summary-item');
-    const voltageItem = document.getElementById('summary-voltage').closest('.summary-item');
-    const currentItem = document.getElementById('summary-current').closest('.summary-item');
-    const vocItem = document.getElementById('summary-voc').closest('.summary-item');
-    const iscItem = document.getElementById('summary-isc').closest('.summary-item');
-    
+    const arraySummary = document.getElementById('array-summary');
+    const summaryTitle = document.getElementById('array-summary-title');
+
     if (isDerated) {
-        // Show derated power and voltage with indicators and styling
-        document.getElementById('summary-power').textContent = Math.round(calculatedArray.deratedPower) + 'W (derated)';
-        document.getElementById('summary-voltage').textContent = calculatedArray.deratedVoltage.toFixed(1) + 'V (derated)';
-        
-        // Apply derated styling
-        powerItem.classList.add('derated');
-        voltageItem.classList.add('derated');
+        // Update title to mention derated
+        summaryTitle.textContent = 'Your PV Array Specifications (Derated)';
+
+        // Show all derated parameters (formatted: Power=integer, Voltage/Current=1 decimal)
+        document.getElementById('summary-power').textContent = Math.round(calculatedArray.deratedPower) + 'W';
+        document.getElementById('summary-voltage').textContent = calculatedArray.deratedVoltage.toFixed(1) + 'V';
+        document.getElementById('summary-current').textContent = calculatedArray.deratedCurrent.toFixed(1) + 'A';
+        document.getElementById('summary-voc').textContent = calculatedArray.deratedVoc.toFixed(1) + 'V';
+        document.getElementById('summary-isc').textContent = calculatedArray.deratedIsc.toFixed(1) + 'A';
+
+        // Add orange border styling for derated values
+        arraySummary.classList.add('derated-summary');
     } else {
-        // Show STC values
-        document.getElementById('summary-power').textContent = calculatedArray.power + 'W';
+        // Update title to normal
+        summaryTitle.textContent = 'Your PV Array Specifications';
+
+        // Show STC values (formatted: Power=integer, Voltage/Current=1 decimal)
+        document.getElementById('summary-power').textContent = Math.round(calculatedArray.power) + 'W';
         document.getElementById('summary-voltage').textContent = calculatedArray.voltage.toFixed(1) + 'V';
-        
-        // Remove derated styling
-        powerItem.classList.remove('derated');
-        voltageItem.classList.remove('derated');
+        document.getElementById('summary-current').textContent = calculatedArray.current.toFixed(1) + 'A';
+        document.getElementById('summary-voc').textContent = calculatedArray.voc.toFixed(1) + 'V';
+        document.getElementById('summary-isc').textContent = calculatedArray.isc.toFixed(1) + 'A';
+
+        // Remove orange border styling for STC values
+        arraySummary.classList.remove('derated-summary');
     }
-    
-    // Always remove derated styling from non-temperature dependent values
-    currentItem.classList.remove('derated');
-    vocItem.classList.remove('derated');
-    iscItem.classList.remove('derated');
-    
-    document.getElementById('summary-current').textContent = calculatedArray.current.toFixed(2) + 'A';
-    document.getElementById('summary-voc').textContent = calculatedArray.voc.toFixed(1) + 'V';
-    document.getElementById('summary-isc').textContent = calculatedArray.isc.toFixed(2) + 'A';
 }
 
 // MPPT Selection functionality
 function initializeMPPTSelection() {
     // Generate controller cards dynamically
     generateControllerCards();
-    const hintsBtn = document.getElementById('show-hints');
-    const hintsContent = document.getElementById('hints-content');
-    
-    if (hintsBtn) {
-        hintsBtn.addEventListener('click', function() {
-            const isVisible = hintsContent.style.display === 'block';
-            hintsContent.style.display = isVisible ? 'none' : 'block';
-            this.textContent = isVisible ? 'Show Sizing Hints' : 'Hide Sizing Hints';
-        });
-    }
+    // Initialize hints button
+    initializeMPPTHints();
 }
 
 function generateControllerCards() {
@@ -1167,19 +1276,23 @@ function evaluateMPPTSelection(controllerId) {
     });
     
     // Improved evaluation criteria with temperature derating
-    const actualVoc = calculatedArray.deratedVoc || calculatedArray.voc;
+    // Use derated values when temperature ≠ 25°C, otherwise use STC values
+    const isDerated = arrayConfig.cellTemperature !== 25;
+    const actualVoc = isDerated ? calculatedArray.deratedVoc : calculatedArray.voc;
+    const actualIsc = isDerated ? calculatedArray.deratedIsc : calculatedArray.isc;
+    const actualArrayPower = isDerated ? calculatedArray.deratedPower : calculatedArray.power;
+    const operatingVoltage = isDerated ? calculatedArray.deratedVoltage : calculatedArray.voltage;
+
     const tempDeratedVoc = actualVoc * 1.2; // 20% safety margin for cold temperature
     const voltageOk = controller.maxVoltage > tempDeratedVoc;
-    const currentOk = controller.maxCurrent >= (calculatedArray.isc * 1.25); // 25% safety margin
-    
-    // Power matching based on 48V system (most common) - use derated power
+    const currentOk = controller.maxCurrent >= (actualIsc * 1.25); // 25% safety margin
+
+    // Power matching based on 48V system (most common)
     const systemVoltage = 48;
-    const actualArrayPower = calculatedArray.deratedPower || calculatedArray.power;
     const requiredControllerPower = actualArrayPower * 0.8; // Allow 80% utilization
     const powerOk = controller.maxPower >= requiredControllerPower;
-    
-    // MPPT range check - use derated voltage for accurate assessment
-    const operatingVoltage = calculatedArray.deratedVoltage || calculatedArray.voltage;
+
+    // MPPT range check
     const mpptRangeOk = operatingVoltage >= controller.mpptMin && operatingVoltage <= controller.mpptMax;
     
     const isCorrect = voltageOk && currentOk && powerOk && mpptRangeOk;
@@ -1205,42 +1318,42 @@ function evaluateMPPTSelection(controllerId) {
             <p><strong>Excellent choice!</strong> The ${controller.name} is properly sized for your PV array. Here's why this selection works:</p>
             <ul>
                 <li><strong>Voltage Safety:</strong> The controller's ${controller.maxVoltage}V maximum input safely exceeds your array's cold-weather Voc of ${tempDeratedVoc.toFixed(1)}V (${actualVoc.toFixed(1)}V × 1.2 safety factor)</li>
-                <li><strong>Current Handling:</strong> The ${controller.maxCurrent}A rating provides adequate capacity for your array's ${calculatedArray.isc.toFixed(2)}A short-circuit current with 25% safety margin</li>
-                <li><strong>Power Capacity:</strong> Sufficient power handling for your ${requiredControllerPower.toFixed(0)}W minimum requirement (80% of ${actualArrayPower}W array)</li>
+                <li><strong>Current Handling:</strong> The ${controller.maxCurrent}A rating provides adequate capacity for your array's ${actualIsc.toFixed(1)}A short-circuit current with 25% safety margin</li>
+                <li><strong>Power Capacity:</strong> Sufficient power handling for your ${Math.round(requiredControllerPower)}W minimum requirement (80% of ${Math.round(actualArrayPower)}W array)</li>
                 <li><strong>MPPT Range:</strong> Your array's operating voltage of ${operatingVoltage.toFixed(1)}V falls within the MPPT range of ${controller.mpptMin}V to ${controller.mpptMax}V</li>
             </ul>
         `;
     } else {
         feedbackContent += `<p><strong>This controller is not suitable for your array.</strong> Here are the issues:</p><ul>`;
-        
+
         if (!voltageOk) {
             feedbackContent += `<li><strong>Voltage Exceeded:</strong> Your array's cold-weather Voc of ${tempDeratedVoc.toFixed(1)}V (${actualVoc.toFixed(1)}V × 1.2 safety margin) exceeds the controller's ${controller.maxVoltage}V maximum. This could damage the controller.</li>`;
         }
-        
+
         if (!currentOk) {
-            feedbackContent += `<li><strong>Insufficient Current Rating:</strong> Your array's Isc of ${calculatedArray.isc.toFixed(2)}A requires at least ${(calculatedArray.isc * 1.25).toFixed(2)}A controller rating (with safety margin), but this controller only handles ${controller.maxCurrent}A.</li>`;
+            feedbackContent += `<li><strong>Insufficient Current Rating:</strong> Your array's Isc of ${actualIsc.toFixed(1)}A requires at least ${(actualIsc * 1.25).toFixed(1)}A controller rating (with safety margin), but this controller only handles ${controller.maxCurrent}A.</li>`;
         }
-        
+
         if (!powerOk) {
-            feedbackContent += `<li><strong>Power Limitation:</strong> Your array requires at least ${requiredControllerPower.toFixed(0)}W controller capacity (80% of ${actualArrayPower}W), but this controller only provides ${controller.maxPower}W.</li>`;
+            feedbackContent += `<li><strong>Power Limitation:</strong> Your array requires at least ${Math.round(requiredControllerPower)}W controller capacity (80% of ${Math.round(actualArrayPower)}W), but this controller only provides ${controller.maxPower}W.</li>`;
         }
-        
+
         if (!mpptRangeOk) {
             feedbackContent += `<li><strong>MPPT Range Issue:</strong> Your array's operating voltage of ${operatingVoltage.toFixed(1)}V falls outside the MPPT range of ${controller.mpptMin}V to ${controller.mpptMax}V.</li>`;
         }
-        
+
         feedbackContent += '</ul>';
     }
     
-    const temperatureNote = arrayConfig.cellTemperature !== 25 ? ` (at ${arrayConfig.cellTemperature}°C)` : ' (STC)';
-    
+    const temperatureNote = arrayConfig.cellTemperature !== 25 ? ` (at ${arrayConfig.cellTemperature}°C)` : ' (at STC)';
+
     feedbackContent += `
         <div class="feedback-formula">
             <strong>Key Sizing Rules${temperatureNote}:</strong><br>
             ✓ Controller Max Voltage > Array Voc × 1.2 (${actualVoc.toFixed(1)} × 1.2 = ${tempDeratedVoc.toFixed(1)}V)<br>
             ${voltageOk ? '✓' : '✗'} Voltage Safety: Controller max voltage (${controller.maxVoltage}V) > Array Voc (${actualVoc.toFixed(1)}V)<br>
-            ${currentOk ? '✓' : '✗'} Current Check: Controller max current (${controller.maxCurrent}A) > Array Isc × 1.25 (${(calculatedArray.isc * 1.25).toFixed(2)}A)<br>
-            ${powerOk ? '✓' : '✗'} Power Compatibility: Controller max power (${controller.maxPower}W) > Array power (${actualArrayPower}W${temperatureNote})<br>
+            ${currentOk ? '✓' : '✗'} Current Check: Controller max current (${controller.maxCurrent}A) > Array Isc × 1.25 (${(actualIsc * 1.25).toFixed(1)}A)<br>
+            ${powerOk ? '✓' : '✗'} Power Compatibility: Controller max power (${controller.maxPower}W) > Array power (${Math.round(actualArrayPower)}W${temperatureNote})<br>
             ${mpptRangeOk ? '✓' : '✗'} MPPT Range: Array Vmp (${operatingVoltage.toFixed(1)}V${temperatureNote}) within MPPT range (${controller.mpptMin}-${controller.mpptMax}V)
         </div>
     `;
@@ -1256,18 +1369,8 @@ function evaluateMPPTSelection(controllerId) {
 function initializeInverterSelection() {
     // Generate inverter cards dynamically
     generateInverterCards();
-    
-    // Initialize inverter hints button
-    const inverterHintsBtn = document.getElementById('show-inverter-hints');
-    const inverterHintsContent = document.getElementById('inverter-hints-content');
-    
-    if (inverterHintsBtn) {
-        inverterHintsBtn.addEventListener('click', function() {
-            const isVisible = inverterHintsContent.style.display === 'block';
-            inverterHintsContent.style.display = isVisible ? 'none' : 'block';
-            this.textContent = isVisible ? 'Show Inverter Sizing Hints' : 'Hide Inverter Sizing Hints';
-        });
-    }
+    // Initialize hints button
+    initializeInverterHints();
 }
 
 function generateInverterCards() {
@@ -1430,6 +1533,7 @@ function updateModuleSpecs() {
     document.querySelector('.spec-item:nth-child(6) span').textContent = selectedPanel.isc + 'A';
     document.querySelector('.spec-item:nth-child(7) span').textContent = selectedPanel.tempCoeff + '%/°C';
     document.querySelector('.spec-item:nth-child(8) span').textContent = selectedPanel.tempCoeffVoltage + '%/°C';
+    document.querySelector('.spec-item:nth-child(9) span').textContent = (selectedPanel.tempCoeffCurrent > 0 ? '+' : '') + selectedPanel.tempCoeffCurrent + '%/°C';
     
     // Recalculate array output with new module specs and update system
     calculateArrayOutput();
@@ -1470,28 +1574,45 @@ function initializeSiteAnalysis() {
 function updateSiteAnalysis() {
     const site = solarSites[siteAnalysis.selectedLocation];
     if (!site) return;
-    
+
     // Check if Southern Hemisphere
     const isSouthernHemisphere = site.lat < 0;
-    
-    // Calculate tilt and azimuth factors
-    const tiltFactor = calculateTiltFactor(siteAnalysis.tiltAngle, site.optimalTilt);
-    const azimuthFactor = calculateAzimuthFactor(siteAnalysis.azimuthAngle, site.optimalAzimuth);
-    
-    siteAnalysis.currentGHI = Math.round(site.ghi * tiltFactor * azimuthFactor);
-    
+
+    // Calculate POA (Plane of Array) irradiance using scientific method
+    const poa = calculatePOA(site, siteAnalysis.tiltAngle, siteAnalysis.azimuthAngle);
+    siteAnalysis.currentPOA = Math.round(poa.poaGlobal);
+
     // Calculate performance metrics using actual array power from global state
     const arrayPower = globalSystemState.arrayPower || calculatedArray.power || 2000;
-    
-    // More realistic annual generation calculation including system losses
-    const systemEfficiency = 0.85; // Account for inverter losses, wiring losses, soiling, etc.
-    const dcToAcRatio = 1.2; // Typical DC to AC ratio for good system design
-    const effectiveArrayPower = Math.min(arrayPower, arrayPower / dcToAcRatio);
-    
-    // Annual generation = GHI × Array Power × System Efficiency ÷ STC irradiance (1000 W/m²)
-    const annualGeneration = (siteAnalysis.currentGHI * effectiveArrayPower * systemEfficiency / 1000).toFixed(0);
-    const performanceRatio = (tiltFactor * azimuthFactor * 100).toFixed(1);
-    const irradiationFactor = (tiltFactor * azimuthFactor).toFixed(2);
+
+    // System losses (industry standard)
+    const inverterEfficiency = 0.96;    // 4% inverter loss
+
+    // Dynamic temperature loss calculation based on actual cell temperature
+    // Uses the temperature coefficient for power from the module specs
+    const cellTemp = arrayConfig.cellTemperature || 25;
+    const tempCoeff = moduleSpecs.tempCoeffPower || -0.35; // Default -0.35%/°C
+    const tempDifference = cellTemp - 25; // Difference from STC (25°C)
+    const temperatureDeratingFactor = 1 + (tempCoeff / 100) * tempDifference;
+    // Convert to loss factor (if temp > 25°C, this will be < 1.0, representing a loss)
+    const temperatureLoss = Math.max(0.5, Math.min(1.2, temperatureDeratingFactor)); // Clamp between 50% and 120%
+
+    const soilingLoss = 0.98;           // 2% soiling loss
+    const wiringLoss = 0.98;            // 2% wiring loss
+    const mismatchLoss = 0.98;          // 2% mismatch loss
+
+    // Overall system efficiency (Performance Ratio)
+    const systemPR = inverterEfficiency * temperatureLoss * soilingLoss * wiringLoss * mismatchLoss;
+
+    // Annual generation = POA × Array Power × PR ÷ STC irradiance (1000 W/m²)
+    const annualGeneration = (siteAnalysis.currentPOA * arrayPower * systemPR / 1000).toFixed(0);
+
+    // Performance Ratio as percentage (includes all losses)
+    const performanceRatio = (systemPR * 100).toFixed(1);
+
+    // Specific Yield (kWh/kWp/year) - industry standard metric
+    // Annual energy per installed kW of PV capacity
+    const specificYield = (siteAnalysis.currentPOA * systemPR).toFixed(0);
     
     // Update display
     const locationDisplay = document.getElementById('location-display');
@@ -1514,7 +1635,7 @@ function updateSiteAnalysis() {
     }
     if (tiltDisplay) tiltDisplay.textContent = siteAnalysis.tiltAngle + '°';
     if (azimuthDisplay) azimuthDisplay.textContent = siteAnalysis.azimuthAngle + '°';
-    if (ghiDisplay) ghiDisplay.textContent = siteAnalysis.currentGHI + ' kWh/m²/year';
+    if (ghiDisplay) ghiDisplay.textContent = siteAnalysis.currentPOA + ' kWh/m²/year';
     if (optimalTiltDisplay) optimalTiltDisplay.textContent = 'Optimal: ' + site.optimalTilt + '°';
     
     // Update hemisphere note and azimuth slider default
@@ -1535,52 +1656,92 @@ function updateSiteAnalysis() {
     // Update performance impact calculations
     const annualGenDisplay = document.getElementById('annual-generation');
     const performanceRatioDisplay = document.getElementById('performance-ratio');
-    const irradiationFactorDisplay = document.getElementById('irradiation-factor');
-    
+    const specificYieldDisplay = document.getElementById('irradiation-factor');
+
     if (annualGenDisplay) annualGenDisplay.textContent = annualGeneration + ' kWh/year';
     if (performanceRatioDisplay) performanceRatioDisplay.textContent = performanceRatio + '%';
-    if (irradiationFactorDisplay) irradiationFactorDisplay.textContent = irradiationFactor;
-    
+    if (specificYieldDisplay) specificYieldDisplay.textContent = specificYield + ' kWh/kWp/year';
+
+    // Update loss breakdown display
+    const inverterEffDisplay = document.getElementById('inverter-efficiency');
+    const tempLossDisplay = document.getElementById('temperature-loss');
+    const soilingLossDisplay = document.getElementById('soiling-loss');
+    const wiringLossDisplay = document.getElementById('wiring-loss');
+    const mismatchLossDisplay = document.getElementById('mismatch-loss');
+
+    if (inverterEffDisplay) inverterEffDisplay.textContent = (inverterEfficiency * 100).toFixed(1) + '%';
+    if (tempLossDisplay) {
+        const tempLossPercent = (temperatureLoss * 100).toFixed(1);
+        const tempLossAmount = (100 - temperatureLoss * 100).toFixed(1);
+        tempLossDisplay.textContent = tempLossPercent + '% (' + tempLossAmount + '% loss at ' + cellTemp + '°C)';
+    }
+    if (soilingLossDisplay) soilingLossDisplay.textContent = (soilingLoss * 100).toFixed(1) + '%';
+    if (wiringLossDisplay) wiringLossDisplay.textContent = (wiringLoss * 100).toFixed(1) + '%';
+    if (mismatchLossDisplay) mismatchLossDisplay.textContent = (mismatchLoss * 100).toFixed(1) + '%';
+
     // Update recommendations
-    updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHemisphere);
-    
+    updateSiteRecommendations(site, poa.ratio, isSouthernHemisphere);
+
+    // Update simulation displays
+    updateSimulationDisplays();
+
     // Update global system state with new site analysis
     updateGlobalSystemState();
     updateDynamicDiagram();
 }
 
-function calculateTiltFactor(currentTilt, optimalTilt) {
-    const difference = Math.abs(currentTilt - optimalTilt);
-    // More realistic tilt factor based on cosine losses
-    // Performance drops more significantly with larger deviations
-    if (difference <= 5) return 1.0;
-    if (difference <= 10) return 0.98;
-    if (difference <= 15) return 0.95;
-    if (difference <= 20) return 0.91;
-    if (difference <= 30) return 0.85;
-    if (difference <= 45) return 0.78;
-    return Math.max(0.65, 0.95 - (difference - 10) * 0.008);
+// Scientific POA (Plane of Array) irradiance calculation
+// Based on HDKR (Hay-Davies-Klucher-Reindl) transposition model
+function calculatePOA(site, tilt, azimuth) {
+    const beta = tilt * Math.PI / 180;  // Tilt angle in radians
+    const lat = site.lat * Math.PI / 180;  // Latitude in radians
+
+    // Special case: horizontal panels (tilt = 0)
+    if (tilt === 0) {
+        return {
+            poaGlobal: site.ghi,
+            ratio: 1.0  // No tilt/azimuth effect
+        };
+    }
+
+    // Component fractions
+    const diffuseFraction = site.dhi / site.ghi;
+    const beamFraction = (site.ghi - site.dhi) / site.ghi;
+
+    // Calculate azimuth deviation from optimal
+    const azimuthDev = Math.abs(azimuth - site.optimalAzimuth);
+    const circularDev = Math.min(azimuthDev, 360 - azimuthDev);
+    const azimuthRadians = circularDev * Math.PI / 180;
+
+    // Geometric factor for beam component
+    // Rb = cos(incident angle) / cos(zenith angle)
+    // Simplified: considers tilt and azimuth deviation
+    const Rb = Math.cos(beta) + Math.sin(beta) * Math.cos(azimuthRadians);
+
+    // POA Beam component
+    const poaBeam = (site.ghi - site.dhi) * Math.max(0, Rb);
+
+    // POA Diffuse component (isotropic sky model)
+    const poaDiffuse = site.dhi * ((1 + Math.cos(beta)) / 2);
+
+    // POA Ground-reflected component (albedo = 0.2 typical)
+    const albedo = 0.2;
+    const poaGround = site.ghi * albedo * ((1 - Math.cos(beta)) / 2);
+
+    // Total POA irradiance
+    const poaGlobal = poaBeam + poaDiffuse + poaGround;
+
+    return {
+        poaGlobal: poaGlobal,
+        ratio: poaGlobal / site.ghi,
+        components: { beam: poaBeam, diffuse: poaDiffuse, ground: poaGround }
+    };
 }
 
-function calculateAzimuthFactor(azimuth, optimalAzimuth) {
-    const deviation = Math.abs(azimuth - optimalAzimuth);
-    // Handle circular nature of compass (e.g., 350° is close to 10°)
-    const circularDeviation = Math.min(deviation, 360 - deviation);
-    
-    // More realistic azimuth factor - east/west facing can lose 10-15%
-    if (circularDeviation <= 10) return 1.0;
-    if (circularDeviation <= 30) return 0.97;
-    if (circularDeviation <= 45) return 0.93;
-    if (circularDeviation <= 60) return 0.89;
-    if (circularDeviation <= 90) return 0.85; // East/West facing
-    if (circularDeviation <= 135) return 0.75;
-    return Math.max(0.55, 0.95 - circularDeviation * 0.0035); // North-facing in northern hemisphere
-}
 
-
-function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHemisphere) {
+function updateSiteRecommendations(site, poaRatio, isSouthernHemisphere) {
     const recommendations = [];
-    
+
     // Tilt recommendations
     const tiltDifference = Math.abs(siteAnalysis.tiltAngle - site.optimalTilt);
     if (tiltDifference <= 5) {
@@ -1590,7 +1751,7 @@ function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHe
     } else {
         recommendations.push(`Tilt angle significantly deviates from optimal ${site.optimalTilt}°`);
     }
-    
+
     // Azimuth recommendations
     const azimuthDifference = Math.abs(siteAnalysis.azimuthAngle - site.optimalAzimuth);
     if (azimuthDifference <= 10 || azimuthDifference >= 350) {
@@ -1600,14 +1761,13 @@ function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHe
         const optimal = isSouthernHemisphere ? "north (0°)" : "south (180°)";
         recommendations.push(`Consider orienting panels toward ${optimal} for optimal performance`);
     }
-    
-    // Performance recommendations
-    const overallFactor = tiltFactor * azimuthFactor;
-    if (overallFactor >= 0.95) {
+
+    // Performance recommendations based on POA ratio
+    if (poaRatio >= 1.05) {
         recommendations.push("Excellent solar resource utilization");
-    } else if (overallFactor >= 0.85) {
+    } else if (poaRatio >= 0.95) {
         recommendations.push("Good solar resource utilization");
-    } else if (overallFactor >= 0.75) {
+    } else if (poaRatio >= 0.80) {
         recommendations.push("Fair solar resource - consider optimization");
     } else {
         recommendations.push("Poor orientation - significant performance loss");
@@ -1631,11 +1791,11 @@ function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHe
         recommendations.push(`Lower solar resource (${site.ghi} kWh/m²/year) - focus on system efficiency and orientation`);
     }
     
-    // Add practical installation advice
-    if (overallFactor < 0.85) {
+    // Add practical installation advice based on POA ratio
+    if (poaRatio < 0.85) {
         recommendations.push("Current orientation reduces output by >15% - consider roof constraints vs. performance trade-offs");
     }
-    
+
     // Add shading consideration
     recommendations.push("Ensure panels are free from shading during peak sun hours (9 AM - 3 PM)");
     
@@ -1646,12 +1806,32 @@ function updateSiteRecommendations(site, tiltFactor, azimuthFactor, isSouthernHe
     }
 }
 
+function updateSimulationDisplays() {
+    const site = solarSites[siteAnalysis.selectedLocation] || solarSites['phoenix'];
+
+    // Update simulation location display
+    const simLocationDisplay = document.getElementById('sim-location');
+    if (simLocationDisplay) {
+        simLocationDisplay.textContent = site.name;
+    }
+
+    // Update simulation system configuration display
+    const simConfigDisplay = document.getElementById('sim-system-config');
+    if (simConfigDisplay) {
+        const arrayPower = globalSystemState.arrayPower || calculatedArray.power || 2000;
+        simConfigDisplay.textContent = `${site.name} | ${arrayPower}W Array | ${siteAnalysis.tiltAngle}° Tilt`;
+    }
+}
+
 // System simulation functionality
 function initializeSystemSimulation() {
     const simulateBtn = document.getElementById('simulate-btn');
     const weatherSelect = document.getElementById('weather-condition');
     const seasonSelect = document.getElementById('season-select');
-    
+
+    // Update simulation displays with current site analysis
+    updateSimulationDisplays();
+
     if (simulateBtn) {
         simulateBtn.addEventListener('click', startSimulation);
     }
@@ -1686,29 +1866,29 @@ function generateSimulationData() {
     // Get weather and season conditions
     const weather = document.getElementById('weather-condition').value;
     const season = document.getElementById('season-select').value;
-    
+
     // Generate 24-hour simulation data
     simulationData.dailyGeneration = [];
     simulationData.batterySOC = [];
     simulationData.loadConsumption = [];
-    
+
     let batterySOC = 80; // Start at 80% SOC
     const batteryCapacity = 400; // Ah at 48V = 19.2kWh
     const systemVoltage = 48;
-    
+
     for (let hour = 0; hour < 24; hour++) {
         // Solar generation curve with weather and seasonal effects
         const solarGeneration = calculateHourlySolarGeneration(hour, weather, season);
-        
+
         // Load consumption (varied throughout day)
         const loadConsumption = calculateHourlyLoadConsumption(hour, season);
-        
+
         // Battery SOC calculation
         const netPower = solarGeneration - loadConsumption;
         const energyChange = netPower / systemVoltage; // Ah change
         batterySOC += (energyChange / batteryCapacity) * 100;
         batterySOC = Math.max(20, Math.min(100, batterySOC)); // Limit SOC range
-        
+
         simulationData.dailyGeneration.push(Math.round(solarGeneration));
         simulationData.loadConsumption.push(Math.round(loadConsumption));
         simulationData.batterySOC.push(Math.round(batterySOC));
@@ -1716,45 +1896,106 @@ function generateSimulationData() {
 }
 
 function calculateHourlySolarGeneration(hour, weather = 'clear', season = 'summer') {
-    // Define seasonal daylight hours
-    const seasonalParams = {
-        'summer': { sunriseHour: 5.5, sunsetHour: 18.5, peakPower: 1.0, cloudVariability: 0.95 },
-        'spring': { sunriseHour: 6, sunsetHour: 18, peakPower: 0.9, cloudVariability: 0.85 },
-        'winter': { sunriseHour: 7, sunsetHour: 17, peakPower: 0.7, cloudVariability: 0.8 }
+    // Get current site and array configuration
+    const currentSite = solarSites[siteAnalysis.selectedLocation] || solarSites['phoenix'];
+    const latitude = currentSite.lat;
+    const arrayPower = calculatedArray.power || 2000;
+
+    // Day of year for seasonal calculation (approximate)
+    const seasonDayOfYear = {
+        'summer': 172,  // June 21 (summer solstice)
+        'spring': 80,   // March 21 (spring equinox)
+        'winter': 355   // December 21 (winter solstice)
     };
-    
-    const params = seasonalParams[season] || seasonalParams['summer'];
-    
+    const dayOfYear = seasonDayOfYear[season] || seasonDayOfYear['summer'];
+
+    // Solar declination angle (degrees)
+    const declination = 23.45 * Math.sin((2 * Math.PI / 365) * (dayOfYear - 81));
+
+    // Hour angle (degrees) - solar noon is at hour 12
+    const hourAngle = 15 * (hour - 12);
+
+    // Solar altitude angle (elevation) in degrees
+    const latRad = latitude * Math.PI / 180;
+    const decRad = declination * Math.PI / 180;
+    const hourRad = hourAngle * Math.PI / 180;
+
+    const sinAltitude = Math.sin(latRad) * Math.sin(decRad) +
+                       Math.cos(latRad) * Math.cos(decRad) * Math.cos(hourRad);
+    const altitudeAngle = Math.asin(sinAltitude) * 180 / Math.PI;
+
+    // If sun is below horizon, no generation
+    if (altitudeAngle <= 0) {
+        return 0;
+    }
+
+    // Air mass correction (simplified Kasten-Young formula)
+    const airMass = 1 / (sinAltitude + 0.50572 * Math.pow(altitudeAngle + 6.07995, -1.6364));
+
+    // Clear sky irradiance (W/m²) - simplified clear sky model
+    // Convert from kWh/m²/year to W/m² for hourly simulation
+    // kWh/m²/year * 1000 / 8760 hours/year = average W/m²
+    const avgDNI = (currentSite.dni * 1000) / 8760;  // Average W/m² from annual kWh/m²/year
+    const avgDHI = (currentSite.dhi * 1000) / 8760;
+
+    // Scale by sun position and atmospheric conditions
+    const clearSkyIrradiance = avgDNI * sinAltitude * Math.exp(-0.09 * airMass) * 8; // Peak factor
+    const diffuseIrradiance = avgDHI * 4; // Peak diffuse irradiance
+
     // Weather condition multipliers
     const weatherEffects = {
         'clear': 1.0,
         'partly_cloudy': 0.75,
         'overcast': 0.3
     };
-    
     const weatherMultiplier = weatherEffects[weather] || 1.0;
-    
-    // Check if it's daytime
-    if (hour < params.sunriseHour || hour > params.sunsetHour) return 0;
-    
-    const peakHour = 12;
-    const maxPower = calculatedArray.power || 2000;
-    const hourFromPeak = Math.abs(hour - peakHour);
-    
-    // Gaussian curve with seasonal adjustment
-    let generation = maxPower * Math.exp(-Math.pow(hourFromPeak, 2) / 18) * params.peakPower;
-    
-    // Apply weather effects
-    generation *= weatherMultiplier;
-    
-    // Add cloud variability for partly cloudy conditions
+
+    // Add cloud variability for partly cloudy
+    let cloudVariability = 1.0;
     if (weather === 'partly_cloudy') {
-        generation *= (params.cloudVariability + Math.random() * (1 - params.cloudVariability));
+        cloudVariability = (0.85 + Math.random() * 0.15);
     }
-    
-    // Apply site-specific factors
-    generation *= (siteAnalysis.currentGHI / 2200); // Normalize to Phoenix baseline
-    
+
+    // Calculate POA irradiance considering tilt and azimuth
+    const tilt = siteAnalysis.tiltAngle;
+    const azimuth = siteAnalysis.azimuthAngle;
+
+    // Determine optimal solar azimuth based on hemisphere
+    // Northern Hemisphere: sun is south (180°) at noon
+    // Southern Hemisphere: sun is north (0°) at noon
+    const solarAzimuth = latitude >= 0 ? 180 : 0;
+
+    // Calculate azimuth deviation (0° = perfect alignment, 180° = opposite direction)
+    const azimuthDiff = Math.abs(azimuth - solarAzimuth);
+    const circularAzimuthDiff = Math.min(azimuthDiff, 360 - azimuthDiff);
+    const azimuthRad = circularAzimuthDiff * Math.PI / 180;
+
+    // Incidence angle calculation
+    const beta = tilt * Math.PI / 180;
+
+    // Simplified incidence angle: when facing wrong direction (180°), beam component drops significantly
+    // cos(0°) = 1.0 (perfect), cos(90°) = 0 (perpendicular), cos(180°) = -1 (opposite)
+    const azimuthFactor = Math.cos(azimuthRad); // Range: 1.0 to -1.0
+
+    // When facing opposite direction, azimuthFactor is negative - we set beam to zero
+    // When perpendicular, azimuthFactor is 0 - beam is zero
+    const beamFactor = Math.max(0, azimuthFactor);
+
+    // Combine tilt and azimuth effects on beam component
+    const tiltEffect = Math.cos(beta) + Math.sin(beta) * beamFactor;
+    const incidenceFactor = Math.max(0, tiltEffect);
+
+    // Apply to beam (direct) and diffuse components separately, with weather effects
+    const poaBeam = clearSkyIrradiance * incidenceFactor * weatherMultiplier * cloudVariability;
+    const poaDiffuse = diffuseIrradiance * ((1 + Math.cos(beta)) / 2) * weatherMultiplier * cloudVariability;
+    const poaIrradiance = poaBeam + poaDiffuse;
+
+    // Calculate power generation
+    // Power = POA Irradiance (W/m²) × Array Power (W) ÷ STC Irradiance (1000 W/m²) × PR
+    const systemPR = 0.96 * 0.90 * 0.98 * 0.98 * 0.98; // ~81% system efficiency
+    let generation = (poaIrradiance / 1000) * arrayPower * systemPR;
+
+    // Return generation power (W)
     return Math.max(0, generation);
 }
 
@@ -1834,7 +2075,8 @@ function createSimulationChart() {
                     backgroundColor: 'rgba(251, 191, 36, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    yAxisID: 'y'
+                    yAxisID: 'y',
+                    borderWidth: 2
                 },
                 {
                     label: 'Load Consumption (W)',
@@ -1843,7 +2085,8 @@ function createSimulationChart() {
                     backgroundColor: 'rgba(220, 38, 38, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    yAxisID: 'y'
+                    yAxisID: 'y',
+                    borderWidth: 2
                 },
                 {
                     label: 'Battery SOC (%)',
@@ -1852,7 +2095,8 @@ function createSimulationChart() {
                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                     fill: false,
                     tension: 0.4,
-                    yAxisID: 'y1'
+                    yAxisID: 'y1',
+                    borderWidth: 2
                 }
             ]
         },
@@ -1910,7 +2154,7 @@ function createSimulationChart() {
                         text: 'Battery SOC (%)'
                     },
                     min: 0,
-                    max: 100,
+                    max: 105,
                     grid: {
                         drawOnChartArea: false,
                     }
@@ -2078,20 +2322,21 @@ function updateGlobalSystemState() {
     const season = document.getElementById('season-select')?.value || 'summer';
     globalSystemState.currentGeneration = Math.round(calculateHourlySolarGeneration(hour, weather, season));
     
-    // Update site information
+    // Update site information from selected location
     const site = solarSites[siteAnalysis.selectedLocation];
     if (site) {
         globalSystemState.location = site.name;
-        globalSystemState.peakSunHours = site.peakSunHours;
+        globalSystemState.siteGHI = site.ghi;
+        globalSystemState.sitePOA = siteAnalysis.currentPOA || site.ghi;
     }
     
     // Calculate system efficiency
     const totalLoad = globalSystemState.dcLoadPower + globalSystemState.acLoadPower;
     globalSystemState.systemEfficiency = Math.min(95, Math.round((totalLoad / globalSystemState.arrayPower) * 100));
     
-    // Update generation utilization based on site analysis
-    if (siteAnalysis.currentGHI && site) {
-        globalSystemState.generationUtilization = Math.round((siteAnalysis.currentGHI / site.ghi) * 100);
+    // Update generation utilization based on site analysis (POA vs baseline GHI)
+    if (siteAnalysis.currentPOA && site) {
+        globalSystemState.generationUtilization = Math.round((siteAnalysis.currentPOA / site.ghi) * 100);
     }
 }
 
@@ -2201,12 +2446,14 @@ function populateSystemReviewData() {
     document.getElementById('review-array-current').textContent = `${globalSystemState.arrayCurrent}A`;
 
     // Site Analysis
-    const locationData = siteData[globalSystemState.location];
-    document.getElementById('review-location').textContent = locationData.name;
-    document.getElementById('review-tilt').textContent = `${locationData.optimalTilt}°`;
-    document.getElementById('review-azimuth').textContent = `${locationData.optimalAzimuth}°`;
-    document.getElementById('review-peak-sun').textContent = `${locationData.peakSunHours} hours`;
-    document.getElementById('review-ghi').textContent = `${locationData.ghi.toLocaleString()} kWh/m²`;
+    const locationData = solarSites[globalSystemState.location];
+    if (locationData) {
+        document.getElementById('review-location').textContent = locationData.name;
+        document.getElementById('review-tilt').textContent = `${locationData.optimalTilt}°`;
+        document.getElementById('review-azimuth').textContent = `${locationData.optimalAzimuth}°`;
+        document.getElementById('review-peak-sun').textContent = `${locationData.peakSunHours} hours`;
+        document.getElementById('review-ghi').textContent = `${locationData.ghi.toLocaleString()} kWh/m²`;
+    }
 
     // MPPT Controller
     if (globalSystemState.selectedMPPT) {
@@ -2413,10 +2660,7 @@ function setupReviewActionButtons() {
         goBackBtn.addEventListener('click', function() {
             // Go back to the previous section (inverter selection)
             showSection('inverter-selection');
-            
-            // Update nav buttons properly
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-section="inverter-selection"]').classList.add('active');
+            updateActiveNavButton('inverter-selection');
         });
     }
 
@@ -2438,13 +2682,8 @@ function setupReviewActionButtons() {
 
 function proceedToSimulation() {
     showSection('simulation');
-    
-    // Update nav buttons properly
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('[data-section="simulation"]').classList.add('active');
-    
+    updateActiveNavButton('simulation');
+
     // Initialize simulation with current system data
-    if (typeof initializeSimulation === 'function') {
-        initializeSimulation();
-    }
+    initializeSystemSimulation();
 }

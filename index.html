@@ -369,20 +369,50 @@
                 </div>
 
                 <div class="config-container">
-                    <div class="panel-selection">
-                        <h3>Solar Panel Selection</h3>
-                        <div class="panel-selector">
-                            <label for="panel-select">Choose Solar Panel:</label>
-                            <select id="panel-select" class="panel-dropdown">
-                                <option value="0">SunPower SPR-350-WHT (350W)</option>
-                                <option value="1">LG NeON R LG365Q1C-A5 (365W)</option>
-                                <option value="2">Canadian Solar CS3U-400MS (400W)</option>
-                                <option value="3">Jinko Tiger Pro JKM450M-60HL4-V (450W)</option>
-                                <option value="4">REC Alpha Pure-R REC405AA (405W)</option>
-                            </select>
+                    <!-- Merged Panel Selection and Array Configuration -->
+                    <div class="panel-and-config-merged">
+                        <h3>Solar Panel Selection & Array Configuration</h3>
+
+                        <div class="merged-content">
+                            <div class="panel-selection-inline">
+                                <label for="panel-select">Choose Solar Panel:</label>
+                                <select id="panel-select" class="panel-dropdown">
+                                    <option value="0">SunPower SPR-350-WHT (350W)</option>
+                                    <option value="1">LG NeON R LG365Q1C-A5 (365W)</option>
+                                    <option value="2">Canadian Solar CS3U-400MS (400W)</option>
+                                    <option value="3">Jinko Tiger Pro JKM450M-60HL4-V (450W)</option>
+                                    <option value="4">REC Alpha Pure-R REC405AA (405W)</option>
+                                </select>
+                            </div>
+
+                            <div class="config-inputs-inline">
+                                <div class="input-group">
+                                    <label for="series-modules">Modules in Series:</label>
+                                    <input type="number" id="series-modules" min="1" max="20" value="2">
+                                </div>
+                                <div class="input-group">
+                                    <label for="parallel-strings">Parallel Strings:</label>
+                                    <input type="number" id="parallel-strings" min="1" max="10" value="3">
+                                </div>
+                                <div class="input-group">
+                                    <label for="cell-temperature">Cell Temperature (°C):</label>
+                                    <input type="number" id="cell-temperature" min="-20" max="80" value="25">
+                                    <button class="help-btn" data-help="temperature">?</button>
+                                </div>
+                                <div class="input-group total-modules-display">
+                                    <label>Total Modules:</label>
+                                    <span id="total-modules-config">6</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="visual-array">
+                            <h4>Visual Array Layout</h4>
+                            <div id="array-visual" class="array-visual"></div>
                         </div>
                     </div>
-                    
+
+                    <!-- Module Specifications -->
                     <div class="module-specs">
                         <h3>Selected Module Specifications</h3>
                         <div class="spec-grid">
@@ -412,76 +442,74 @@
                             </div>
                             <div class="spec-item">
                                 <label>Temp Coefficient (Power):</label>
-                                <span>-0.29%/°C</span>
+                                <span id="temp-coeff-power">-0.29%/°C</span>
                             </div>
                             <div class="spec-item">
                                 <label>Temp Coefficient (Voltage):</label>
-                                <span>-0.27%/°C</span>
+                                <span id="temp-coeff-voltage">-0.27%/°C</span>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="configuration-panel">
-                        <div class="config-inputs">
-                            <h3>Array Configuration</h3>
-                            <div class="input-group">
-                                <label for="series-modules">Modules in Series:</label>
-                                <input type="number" id="series-modules" min="1" max="20" value="2">
+                            <div class="spec-item">
+                                <label>Temp Coefficient (Current):</label>
+                                <span id="temp-coeff-current">+0.06%/°C</span>
                             </div>
-                            <div class="input-group">
-                                <label for="parallel-strings">Parallel Strings:</label>
-                                <input type="number" id="parallel-strings" min="1" max="10" value="3">
-                            </div>
-                            <div class="input-group">
-                                <label for="cell-temperature">Cell Temperature (°C):</label>
-                                <input type="number" id="cell-temperature" min="-20" max="80" value="25">
-                                <button class="help-btn" data-help="temperature">?</button>
-                            </div>
-                        </div>
-
-                        <div class="visual-array">
-                            <h3>Visual Array Layout</h3>
-                            <div id="array-visual" class="array-visual"></div>
                         </div>
                     </div>
 
                     <div class="array-results">
-                        <h3>Array Output (STC Conditions)</h3>
-                        <div class="results-grid">
-                            <div class="result-item">
-                                <label>Total Modules:</label>
-                                <span id="total-modules">6</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Array Voltage (Vmp):</label>
-                                <span id="array-voltage">82.6V</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Array Current (Imp):</label>
-                                <span id="array-current">25.44A</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Array Power:</label>
-                                <span id="array-power">2100W</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Open Circuit Voltage (Voc):</label>
-                                <span id="array-voc">98.4V</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Short Circuit Current (Isc):</label>
-                                <span id="array-isc">27.21A</span>
-                            </div>
-                            <div class="result-item derated" style="display: none;">
-                                <label>Derated Power:</label>
-                                <span id="derated-power">2100W</span>
-                            </div>
-                            <div class="result-item derated-voltage" style="display: none;">
-                                <label>Derated Voltage (Vmp):</label>
-                                <span id="derated-voltage">82.6V</span>
+                        <!-- Row 1: STC Conditions (Always Visible) -->
+                        <div class="array-output-row stc-row">
+                            <h3>Array Output (STC Conditions)</h3>
+                            <div class="results-grid">
+                                <div class="result-item">
+                                    <label>Array Power:</label>
+                                    <span id="array-power-stc">2100W</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Array Voltage (Vmp):</label>
+                                    <span id="array-voltage-stc">82.6V</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Array Current (Imp):</label>
+                                    <span id="array-current-stc">25.4A</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Open Circuit Voltage (Voc):</label>
+                                    <span id="array-voc-stc">98.4V</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Short Circuit Current (Isc):</label>
+                                    <span id="array-isc-stc">27.2A</span>
+                                </div>
                             </div>
                         </div>
-                        
+
+                        <!-- Row 2: Derated Conditions (Conditional) -->
+                        <div class="array-output-row derated-row" id="derated-row" style="display: none;">
+                            <h3>Derated Output at <span id="derated-temp">26</span>°C</h3>
+                            <div class="results-grid">
+                                <div class="result-item">
+                                    <label>Derated Power:</label>
+                                    <span id="array-power-derated">2100W</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Derated Voltage (Vmp):</label>
+                                    <span id="array-voltage-derated">82.6V</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Derated Current (Imp):</label>
+                                    <span id="array-current-derated">25.4A</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Derated Voc:</label>
+                                    <span id="array-voc-derated">98.4V</span>
+                                </div>
+                                <div class="result-item">
+                                    <label>Derated Isc:</label>
+                                    <span id="array-isc-derated">27.2A</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <button class="proceed-btn" id="proceed-to-mppt">Use This Array for MPPT Selection</button>
                     </div>
                 </div>
@@ -526,7 +554,8 @@
                             <p id="location-display">Phoenix, AZ</p>
                             <p><strong>Latitude:</strong> <span id="latitude-display">33.4°N</span></p>
                             <p><strong>Longitude:</strong> <span id="longitude-display">112.1°W</span></p>
-                            <p><strong>Annual GHI:</strong> <span id="ghi-display">2200 kWh/m²/year</span></p>
+                            <p><strong>POA Irradiance:</strong> <span id="ghi-display">2200 kWh/m²/year</span></p>
+                            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;"><em>Data Source: NASA POWER (2024)</em></p>
                         </div>
                     </div>
 
@@ -568,28 +597,58 @@
 
                     <div class="performance-impact">
                         <h3>Performance Impact</h3>
+
                         <div class="impact-grid">
                             <div class="impact-item">
                                 <label>Estimated Annual Generation:</label>
                                 <span id="annual-generation">Calculate</span>
                             </div>
                             <div class="impact-item">
-                                <label>Performance Ratio:</label>
+                                <label>Performance Ratio (PR):</label>
                                 <span id="performance-ratio">Calculate</span>
                             </div>
                             <div class="impact-item">
-                                <label>Irradiation Factor:</label>
-                                <span id="irradiation-factor">1.0</span>
+                                <label>Specific Yield:</label>
+                                <span id="irradiation-factor">Calculate</span>
                             </div>
                         </div>
-                        
+
                         <div class="site-recommendations">
-                            <h4>Recommendations:</h4>
+                            <h4>Recommendations</h4>
                             <ul id="site-recommendations-list">
                                 <li>Tilt angle is optimal for this location</li>
                                 <li>South-facing orientation maximizes generation</li>
                                 <li>Consider seasonal tilt adjustments</li>
                             </ul>
+                        </div>
+
+                        <div class="pr-details">
+                            <div class="pr-formula-compact">
+                                <strong>PR Formula:</strong> Inverter × Temperature × Soiling × Wiring × Mismatch
+                            </div>
+
+                            <div class="loss-breakdown-compact">
+                                <div class="loss-row">
+                                    <span>Inverter:</span>
+                                    <span id="inverter-efficiency">96.0%</span>
+                                </div>
+                                <div class="loss-row">
+                                    <span>Temperature:</span>
+                                    <span id="temperature-loss">90.0%</span>
+                                </div>
+                                <div class="loss-row">
+                                    <span>Soiling:</span>
+                                    <span id="soiling-loss">98.0%</span>
+                                </div>
+                                <div class="loss-row">
+                                    <span>Wiring:</span>
+                                    <span id="wiring-loss">98.0%</span>
+                                </div>
+                                <div class="loss-row">
+                                    <span>Mismatch:</span>
+                                    <span id="mismatch-loss">98.0%</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -603,8 +662,8 @@
                 </div>
 
                 <div class="mppt-container">
-                    <div class="array-summary">
-                        <h3>Your PV Array Specifications</h3>
+                    <div class="array-summary" id="array-summary">
+                        <h3 id="array-summary-title">Your PV Array Specifications</h3>
                         <div class="summary-grid">
                             <div class="summary-item">
                                 <label>Total Power:</label>
@@ -632,78 +691,7 @@
                     <div class="mppt-options">
                         <h3>Available MPPT Controllers</h3>
                         <div class="controller-grid">
-                            
-                            <div class="controller-card" data-controller="1">
-                                <h4>Victron SmartSolar 75/15</h4>
-                                <div class="controller-specs">
-                                    <p><strong>Max Power:</strong> 220W</p>
-                                    <p><strong>Max Input Voltage:</strong> 75V</p>
-                                    <p><strong>MPPT Range:</strong> 18-67V</p>
-                                    <p><strong>Max Current:</strong> 15A</p>
-                                    <p><strong>Battery Voltage:</strong> 12/24V</p>
-                                </div>
-                                <button class="select-controller" data-controller="1">Select This Controller</button>
-                            </div>
-
-                            <div class="controller-card" data-controller="2">
-                                <h4>Victron SmartSolar 100/30</h4>
-                                <div class="controller-specs">
-                                    <p><strong>Max Power:</strong> 440W</p>
-                                    <p><strong>Max Input Voltage:</strong> 100V</p>
-                                    <p><strong>MPPT Range:</strong> 18-92V</p>
-                                    <p><strong>Max Current:</strong> 30A</p>
-                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
-                                </div>
-                                <button class="select-controller" data-controller="2">Select This Controller</button>
-                            </div>
-
-                            <div class="controller-card" data-controller="3">
-                                <h4>Victron SmartSolar 100/50</h4>
-                                <div class="controller-specs">
-                                    <p><strong>Max Power:</strong> 700W</p>
-                                    <p><strong>Max Input Voltage:</strong> 100V</p>
-                                    <p><strong>MPPT Range:</strong> 18-92V</p>
-                                    <p><strong>Max Current:</strong> 50A</p>
-                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
-                                </div>
-                                <button class="select-controller" data-controller="3">Select This Controller</button>
-                            </div>
-
-                            <div class="controller-card" data-controller="4">
-                                <h4>Victron SmartSolar 150/60</h4>
-                                <div class="controller-specs">
-                                    <p><strong>Max Power:</strong> 850W</p>
-                                    <p><strong>Max Input Voltage:</strong> 150V</p>
-                                    <p><strong>MPPT Range:</strong> 18-142V</p>
-                                    <p><strong>Max Current:</strong> 60A</p>
-                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
-                                </div>
-                                <button class="select-controller" data-controller="4">Select This Controller</button>
-                            </div>
-
-                            <div class="controller-card" data-controller="5">
-                                <h4>Victron SmartSolar 150/85</h4>
-                                <div class="controller-specs">
-                                    <p><strong>Max Power:</strong> 1200W</p>
-                                    <p><strong>Max Input Voltage:</strong> 150V</p>
-                                    <p><strong>MPPT Range:</strong> 18-142V</p>
-                                    <p><strong>Max Current:</strong> 85A</p>
-                                    <p><strong>Battery Voltage:</strong> 12/24/48V</p>
-                                </div>
-                                <button class="select-controller" data-controller="5">Select This Controller</button>
-                            </div>
-
-                            <div class="controller-card" data-controller="6">
-                                <h4>Victron SmartSolar 250/100</h4>
-                                <div class="controller-specs">
-                                    <p><strong>Max Power:</strong> 1450W</p>
-                                    <p><strong>Max Input Voltage:</strong> 250V</p>
-                                    <p><strong>MPPT Range:</strong> 18-230V</p>
-                                    <p><strong>Max Current:</strong> 100A</p>
-                                    <p><strong>Battery Voltage:</strong> 24/48V</p>
-                                </div>
-                                <button class="select-controller" data-controller="6">Select This Controller</button>
-                            </div>
+                            <!-- Controller cards will be dynamically generated by JavaScript -->
                         </div>
                     </div>
 
@@ -837,78 +825,7 @@
                     <div class="inverter-options">
                         <h3>Available Inverters</h3>
                         <div class="inverter-grid">
-                            
-                            <div class="inverter-card" data-inverter="1">
-                                <h4>Victron Phoenix 12/1200</h4>
-                                <div class="inverter-specs">
-                                    <p><strong>Continuous Power:</strong> 1200W</p>
-                                    <p><strong>Surge Power:</strong> 2400W</p>
-                                    <p><strong>Input Voltage:</strong> 12V DC</p>
-                                    <p><strong>Efficiency:</strong> 93%</p>
-                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
-                                </div>
-                                <button class="select-inverter" data-inverter="1">Select This Inverter</button>
-                            </div>
-
-                            <div class="inverter-card" data-inverter="2">
-                                <h4>Outback Power GFX2012E</h4>
-                                <div class="inverter-specs">
-                                    <p><strong>Continuous Power:</strong> 2000W</p>
-                                    <p><strong>Surge Power:</strong> 4000W</p>
-                                    <p><strong>Input Voltage:</strong> 12V DC</p>
-                                    <p><strong>Efficiency:</strong> 91%</p>
-                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
-                                </div>
-                                <button class="select-inverter" data-inverter="2">Select This Inverter</button>
-                            </div>
-
-                            <div class="inverter-card" data-inverter="3">
-                                <h4>Schneider XW Pro 3000</h4>
-                                <div class="inverter-specs">
-                                    <p><strong>Continuous Power:</strong> 3000W</p>
-                                    <p><strong>Surge Power:</strong> 6000W</p>
-                                    <p><strong>Input Voltage:</strong> 24V DC</p>
-                                    <p><strong>Efficiency:</strong> 94%</p>
-                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
-                                </div>
-                                <button class="select-inverter" data-inverter="3">Select This Inverter</button>
-                            </div>
-
-                            <div class="inverter-card" data-inverter="4">
-                                <h4>AIMS Power 5000W</h4>
-                                <div class="inverter-specs">
-                                    <p><strong>Continuous Power:</strong> 5000W</p>
-                                    <p><strong>Surge Power:</strong> 10000W</p>
-                                    <p><strong>Input Voltage:</strong> 48V DC</p>
-                                    <p><strong>Efficiency:</strong> 90%</p>
-                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
-                                </div>
-                                <button class="select-inverter" data-inverter="4">Select This Inverter</button>
-                            </div>
-
-                            <div class="inverter-card" data-inverter="5">
-                                <h4>Samlex PST-3000-24</h4>
-                                <div class="inverter-specs">
-                                    <p><strong>Continuous Power:</strong> 3000W</p>
-                                    <p><strong>Surge Power:</strong> 9000W</p>
-                                    <p><strong>Input Voltage:</strong> 24V DC</p>
-                                    <p><strong>Efficiency:</strong> 92%</p>
-                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
-                                </div>
-                                <button class="select-inverter" data-inverter="5">Select This Inverter</button>
-                            </div>
-
-                            <div class="inverter-card" data-inverter="6">
-                                <h4>Go Power GP-3000HD</h4>
-                                <div class="inverter-specs">
-                                    <p><strong>Continuous Power:</strong> 3000W</p>
-                                    <p><strong>Surge Power:</strong> 6000W</p>
-                                    <p><strong>Input Voltage:</strong> 12V DC</p>
-                                    <p><strong>Efficiency:</strong> 89%</p>
-                                    <p><strong>Waveform:</strong> Pure Sine Wave</p>
-                                </div>
-                                <button class="select-inverter" data-inverter="6">Select This Inverter</button>
-                            </div>
+                            <!-- Inverter cards will be dynamically generated by JavaScript -->
                         </div>
                     </div>
 
