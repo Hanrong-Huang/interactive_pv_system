@@ -843,6 +843,26 @@ let siteAnalysis = {
     currentGHI: 2070
 };
 
+// Global irradiance data state
+let irradianceData = null;
+let irradianceDataLoaded = false;
+
+// Initialize hourly irradiance data
+async function initializeIrradianceData() {
+    try {
+        const response = await fetch('irradiance_data_2024.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        irradianceData = await response.json();
+        irradianceDataLoaded = true;
+        console.log(`✅ Loaded irradiance data: ${Object.keys(irradianceData.data).length} locations`);
+    } catch (error) {
+        console.error('❌ Error loading irradiance data:', error);
+        console.warn('⚠️ Using annual averages instead of hourly data');
+    }
+}
+
 // Global state for system simulation
 let simulationData = {
     dailyGeneration: [],
@@ -862,6 +882,10 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeInverterSelection();
         initializeSystemSimulation();
         initializeDiagramInteractivity();
+        initializeCalculationTooltips();
+        
+        // Initialize hourly irradiance data
+        initializeIrradianceData();
         
         // Calculate initial array values
         calculateArrayOutput();
@@ -1662,22 +1686,6 @@ function updateSiteAnalysis() {
     if (performanceRatioDisplay) performanceRatioDisplay.textContent = performanceRatio + '%';
     if (specificYieldDisplay) specificYieldDisplay.textContent = specificYield + ' kWh/kWp/year';
 
-    // Update loss breakdown display
-    const inverterEffDisplay = document.getElementById('inverter-efficiency');
-    const tempLossDisplay = document.getElementById('temperature-loss');
-    const soilingLossDisplay = document.getElementById('soiling-loss');
-    const wiringLossDisplay = document.getElementById('wiring-loss');
-    const mismatchLossDisplay = document.getElementById('mismatch-loss');
-
-    if (inverterEffDisplay) inverterEffDisplay.textContent = (inverterEfficiency * 100).toFixed(1) + '%';
-    if (tempLossDisplay) {
-        const tempLossPercent = (temperatureLoss * 100).toFixed(1);
-        const tempLossAmount = (100 - temperatureLoss * 100).toFixed(1);
-        tempLossDisplay.textContent = tempLossPercent + '% (' + tempLossAmount + '% loss at ' + cellTemp + '°C)';
-    }
-    if (soilingLossDisplay) soilingLossDisplay.textContent = (soilingLoss * 100).toFixed(1) + '%';
-    if (wiringLossDisplay) wiringLossDisplay.textContent = (wiringLoss * 100).toFixed(1) + '%';
-    if (mismatchLossDisplay) mismatchLossDisplay.textContent = (mismatchLoss * 100).toFixed(1) + '%';
 
     // Update recommendations
     updateSiteRecommendations(site, poa.ratio, isSouthernHemisphere);
@@ -1690,45 +1698,123 @@ function updateSiteAnalysis() {
     updateDynamicDiagram();
 }
 
-// Scientific POA (Plane of Array) irradiance calculation
-// Based on HDKR (Hay-Davies-Klucher-Reindl) transposition model
+// POA (Plane of Array) calculation using HDKR transposition model with hourly NASA POWER data
 function calculatePOA(site, tilt, azimuth) {
+    if (!irradianceDataLoaded || !irradianceData) {
+        console.warn('Hourly data not loaded, using fallback calculation');
+        return calculatePOAFallback(site, tilt, azimuth);
+    }
+
+    // Get location ID from site name
+    const locationId = Object.keys(irradianceData.data).find(id => 
+        irradianceData.data[id].location.name === site.name
+    );
+    
+    if (!locationId) {
+        console.warn(`Location ${site.name} not found in hourly data, using fallback`);
+        return calculatePOAFallback(site, tilt, azimuth);
+    }
+
+    // Calculate annual POA by summing all hourly values
+    let totalAnnualPOA = 0;
+    let totalAnnualGHI = 0;
+    let totalBeam = 0;
+    let totalDiffuse = 0;
+    let totalGround = 0;
+
+    const locationData = irradianceData.data[locationId];
+    const hourlyData = locationData.hourlyData;
+
+    // Process all 8,760 hours of data
+    for (const hour of hourlyData) {
+        const hourlyPOA = calculateHourlyPOA(hour, tilt, azimuth, site.lat);
+        totalAnnualPOA += hourlyPOA.poaGlobal;
+        totalAnnualGHI += hour.ghi;
+        totalBeam += hourlyPOA.components.beam;
+        totalDiffuse += hourlyPOA.components.diffuse;
+        totalGround += hourlyPOA.components.ground;
+    }
+
+    // Convert from Wh/m² to kWh/m²
+    const annualPOA = totalAnnualPOA / 1000;
+    const annualGHI = totalAnnualGHI / 1000;
+
+    return {
+        poaGlobal: annualPOA,
+        ratio: annualPOA / annualGHI,
+        components: { 
+            beam: totalBeam / 1000, 
+            diffuse: totalDiffuse / 1000, 
+            ground: totalGround / 1000 
+        }
+    };
+}
+
+// Calculate POA for a single hour using HDKR transposition model
+function calculateHourlyPOA(hourlyData, tilt, azimuth, latitude) {
     const beta = tilt * Math.PI / 180;  // Tilt angle in radians
-    const lat = site.lat * Math.PI / 180;  // Latitude in radians
+
+    // Special case: horizontal panels (tilt = 0)
+    if (tilt === 0) {
+        return {
+            poaGlobal: hourlyData.ghi,
+            components: { beam: 0, diffuse: hourlyData.ghi, ground: 0 }
+        };
+    }
+
+    // Calculate optimal azimuth based on hemisphere
+    const isSouthernHemisphere = latitude < 0;
+    const optimalAzimuth = isSouthernHemisphere ? 0 : 180;
+    
+    // Calculate azimuth deviation from optimal
+    const azimuthDev = Math.abs(azimuth - optimalAzimuth);
+    const circularDev = Math.min(azimuthDev, 360 - azimuthDev);
+    const azimuthRadians = circularDev * Math.PI / 180;
+
+    // HDKR geometric factor calculation
+    const Rb = Math.cos(beta) + Math.sin(beta) * Math.cos(azimuthRadians);
+
+    // POA components using actual hourly NASA POWER data
+    const poaBeam = hourlyData.dni * Math.max(0, Rb);
+    const poaDiffuse = hourlyData.dhi * ((1 + Math.cos(beta)) / 2);
+    const poaGround = hourlyData.ghi * 0.2 * ((1 - Math.cos(beta)) / 2);  // Albedo = 0.2
+    const poaGlobal = poaBeam + poaDiffuse + poaGround;
+
+    return {
+        poaGlobal: poaGlobal,
+        components: { beam: poaBeam, diffuse: poaDiffuse, ground: poaGround }
+    };
+}
+
+// Fallback calculation using annual averages (for when hourly data is not available)
+function calculatePOAFallback(site, tilt, azimuth) {
+    const beta = tilt * Math.PI / 180;  // Tilt angle in radians
 
     // Special case: horizontal panels (tilt = 0)
     if (tilt === 0) {
         return {
             poaGlobal: site.ghi,
-            ratio: 1.0  // No tilt/azimuth effect
+            ratio: 1.0,
+            components: { beam: 0, diffuse: site.ghi, ground: 0 }
         };
     }
 
-    // Component fractions
-    const diffuseFraction = site.dhi / site.ghi;
-    const beamFraction = (site.ghi - site.dhi) / site.ghi;
-
+    // Calculate optimal azimuth based on hemisphere
+    const isSouthernHemisphere = site.lat < 0;
+    const optimalAzimuth = isSouthernHemisphere ? 0 : 180;
+    
     // Calculate azimuth deviation from optimal
-    const azimuthDev = Math.abs(azimuth - site.optimalAzimuth);
+    const azimuthDev = Math.abs(azimuth - optimalAzimuth);
     const circularDev = Math.min(azimuthDev, 360 - azimuthDev);
     const azimuthRadians = circularDev * Math.PI / 180;
 
-    // Geometric factor for beam component
-    // Rb = cos(incident angle) / cos(zenith angle)
-    // Simplified: considers tilt and azimuth deviation
+    // HDKR geometric factor calculation
     const Rb = Math.cos(beta) + Math.sin(beta) * Math.cos(azimuthRadians);
 
-    // POA Beam component
-    const poaBeam = (site.ghi - site.dhi) * Math.max(0, Rb);
-
-    // POA Diffuse component (isotropic sky model)
+    // POA components using annual average NASA POWER data
+    const poaBeam = site.dni * Math.max(0, Rb);
     const poaDiffuse = site.dhi * ((1 + Math.cos(beta)) / 2);
-
-    // POA Ground-reflected component (albedo = 0.2 typical)
-    const albedo = 0.2;
-    const poaGround = site.ghi * albedo * ((1 - Math.cos(beta)) / 2);
-
-    // Total POA irradiance
+    const poaGround = site.ghi * 0.2 * ((1 - Math.cos(beta)) / 2);  // Albedo = 0.2
     const poaGlobal = poaBeam + poaDiffuse + poaGround;
 
     return {
@@ -1956,39 +2042,25 @@ function calculateHourlySolarGeneration(hour, weather = 'clear', season = 'summe
         cloudVariability = (0.85 + Math.random() * 0.15);
     }
 
-    // Calculate POA irradiance considering tilt and azimuth
+    // Calculate POA irradiance using centralized calculation
     const tilt = siteAnalysis.tiltAngle;
     const azimuth = siteAnalysis.azimuthAngle;
 
-    // Determine optimal solar azimuth based on hemisphere
-    // Northern Hemisphere: sun is south (180°) at noon
-    // Southern Hemisphere: sun is north (0°) at noon
-    const solarAzimuth = latitude >= 0 ? 180 : 0;
+    // Create irradiance data object for POA calculation
+    const irradianceData = {
+        ghi: clearSkyIrradiance + diffuseIrradiance,
+        dni: clearSkyIrradiance,
+        dhi: diffuseIrradiance
+    };
 
-    // Calculate azimuth deviation (0° = perfect alignment, 180° = opposite direction)
-    const azimuthDiff = Math.abs(azimuth - solarAzimuth);
-    const circularAzimuthDiff = Math.min(azimuthDiff, 360 - azimuthDiff);
-    const azimuthRad = circularAzimuthDiff * Math.PI / 180;
+    // Calculate POA irradiance using HDKR model
+    const poaResult = calculatePOA(currentSite, tilt, azimuth);
 
-    // Incidence angle calculation
-    const beta = tilt * Math.PI / 180;
-
-    // Simplified incidence angle: when facing wrong direction (180°), beam component drops significantly
-    // cos(0°) = 1.0 (perfect), cos(90°) = 0 (perpendicular), cos(180°) = -1 (opposite)
-    const azimuthFactor = Math.cos(azimuthRad); // Range: 1.0 to -1.0
-
-    // When facing opposite direction, azimuthFactor is negative - we set beam to zero
-    // When perpendicular, azimuthFactor is 0 - beam is zero
-    const beamFactor = Math.max(0, azimuthFactor);
-
-    // Combine tilt and azimuth effects on beam component
-    const tiltEffect = Math.cos(beta) + Math.sin(beta) * beamFactor;
-    const incidenceFactor = Math.max(0, tiltEffect);
-
-    // Apply to beam (direct) and diffuse components separately, with weather effects
-    const poaBeam = clearSkyIrradiance * incidenceFactor * weatherMultiplier * cloudVariability;
-    const poaDiffuse = diffuseIrradiance * ((1 + Math.cos(beta)) / 2) * weatherMultiplier * cloudVariability;
-    const poaIrradiance = poaBeam + poaDiffuse;
+    // Apply weather effects to POA components
+    const poaBeam = poaResult.components.beam * weatherMultiplier * cloudVariability;
+    const poaDiffuse = poaResult.components.diffuse * weatherMultiplier * cloudVariability;
+    const poaGround = poaResult.components.ground * weatherMultiplier * cloudVariability;
+    const poaIrradiance = poaBeam + poaDiffuse + poaGround;
 
     // Calculate power generation
     // Power = POA Irradiance (W/m²) × Array Power (W) ÷ STC Irradiance (1000 W/m²) × PR
@@ -2686,4 +2758,189 @@ function proceedToSimulation() {
 
     // Initialize simulation with current system data
     initializeSystemSimulation();
+}
+
+// Calculation Tooltip and Modal Functions
+function initializeCalculationTooltips() {
+    const performanceBox = document.querySelector('.clickable-performance-box');
+    if (performanceBox) {
+        performanceBox.addEventListener('click', function() {
+            showCalculationModal();
+        });
+    }
+
+    // Modal close functionality
+    const modal = document.getElementById('calculation-modal');
+    const closeBtn = document.querySelector('.calculation-modal-close');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+
+    // Close modal when clicking outside
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+}
+
+function showCalculationModal() {
+    const modal = document.getElementById('calculation-modal');
+    const content = document.getElementById('calculation-content');
+    
+    if (!modal || !content) return;
+
+    // Get current calculation values
+    const site = solarSites[siteAnalysis.selectedLocation];
+    const arrayPower = globalSystemState.arrayPower || calculatedArray.power || 2000;
+    const currentPOA = siteAnalysis.currentPOA || site.ghi;
+    
+    // System efficiency components
+    const inverterEfficiency = 0.96;
+    const soilingLoss = 0.98;
+    const wiringLoss = 0.98;
+    const mismatchLoss = 0.98;
+    
+    // Temperature calculation
+    const cellTemp = arrayConfig.cellTemperature || 25;
+    const tempCoeff = moduleSpecs.tempCoeffPower || -0.35;
+    const tempDifference = cellTemp - 25;
+    const temperatureDeratingFactor = 1 + (tempCoeff / 100) * tempDifference;
+    const temperatureLoss = Math.max(0.5, Math.min(1.2, temperatureDeratingFactor));
+    
+    // Performance Ratio
+    const systemPR = inverterEfficiency * temperatureLoss * soilingLoss * wiringLoss * mismatchLoss;
+    
+    // Annual Generation
+    const annualGeneration = (currentPOA * arrayPower * systemPR / 1000);
+
+    // Generate calculation content
+    content.innerHTML = `
+        <div class="calculation-step">
+            <h4>Step 1: Plane of Array (POA) Irradiance</h4>
+            <p>Calculated using the HDKR transposition model with NASA POWER hourly data:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">POA Calculation</div>
+                <div class="formula-content">
+                    POA = POA_Beam + POA_Diffuse + POA_Ground
+                    
+                    Where:
+                    POA_Beam = DNI × Rb
+                    POA_Diffuse = DHI × ((1 + cos(tilt)) / 2)
+                    POA_Ground = GHI × albedo × ((1 - cos(tilt)) / 2)
+                    Rb = cos(tilt) + sin(tilt) × cos(azimuth_deviation)
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item">
+                    <span class="result-label">Current POA:</span>
+                    <span class="result-value">${currentPOA} kWh/m²/year</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Location:</span>
+                    <span class="result-value">${site.name} (${site.lat.toFixed(2)}°, ${site.lon.toFixed(2)}°)</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Panel Orientation:</span>
+                    <span class="result-value">${siteAnalysis.tiltAngle}° tilt, ${siteAnalysis.azimuthAngle}° azimuth</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-step">
+            <h4>Step 2: System Performance Ratio (PR)</h4>
+            <p>System efficiency accounting for all losses:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">Performance Ratio Formula</div>
+                <div class="formula-content">
+                    PR = η_inverter × η_temperature × η_soiling × η_wiring × η_mismatch
+                    
+                    Where:
+                    η_inverter = ${inverterEfficiency} (${(inverterEfficiency * 100).toFixed(1)}% efficiency)
+                    η_temperature = ${temperatureLoss.toFixed(3)} (${cellTemp}°C cell temperature)
+                    η_soiling = ${soilingLoss} (${((1-soilingLoss) * 100).toFixed(1)}% loss)
+                    η_wiring = ${wiringLoss} (${((1-wiringLoss) * 100).toFixed(1)}% loss)
+                    η_mismatch = ${mismatchLoss} (${((1-mismatchLoss) * 100).toFixed(1)}% loss)
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item highlight">
+                    <span class="result-label">Overall PR:</span>
+                    <span class="result-value">${(systemPR * 100).toFixed(1)}%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-step">
+            <h4>Step 3: Annual Generation Calculation</h4>
+            <p>Standard photovoltaic energy formula:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">Annual Generation Formula</div>
+                <div class="formula-content">
+                    Annual Generation = (POA × Array Power × PR) ÷ STC Irradiance
+                    
+                    Where:
+                    POA = ${currentPOA} kWh/m²/year
+                    Array Power = ${arrayPower} W
+                    PR = ${systemPR.toFixed(3)}
+                    STC Irradiance = 1000 W/m²
+                    
+                    Calculation:
+                    Annual Generation = (${currentPOA} × ${arrayPower} × ${systemPR.toFixed(3)}) ÷ 1000
+                                     = ${annualGeneration.toFixed(0)} kWh/year
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item highlight">
+                    <span class="result-label">Estimated Annual Generation:</span>
+                    <span class="result-value">${annualGeneration.toFixed(0)} kWh/year</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-step">
+            <h4>Step 4: Specific Yield</h4>
+            <p>Energy production per installed kW of PV capacity:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">Specific Yield Formula</div>
+                <div class="formula-content">
+                    Specific Yield = POA × PR
+                    
+                    Calculation:
+                    Specific Yield = ${currentPOA} × ${systemPR.toFixed(3)}
+                                 = ${(currentPOA * systemPR).toFixed(0)} kWh/kWp/year
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item highlight">
+                    <span class="result-label">Specific Yield:</span>
+                    <span class="result-value">${(currentPOA * systemPR).toFixed(0)} kWh/kWp/year</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-source">
+            <h5>Data Sources</h5>
+            <ul class="source-list">
+                <li>NASA POWER API v2.8.0 - Hourly irradiance data (8,760 hours/year)</li>
+                <li>HDKR Transposition Model - Industry standard for POA calculation</li>
+                <li>IEC 61853-1 - Photovoltaic module performance testing standards</li>
+            </ul>
+        </div>
+    `;
+
+    modal.style.display = 'block';
 }

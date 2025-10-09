@@ -595,7 +595,7 @@
                         </div>
                     </div>
 
-                    <div class="performance-impact">
+                    <div class="performance-impact clickable-performance-box" data-tooltip="Click to see calculation details">
                         <h3>Performance Impact</h3>
 
                         <div class="impact-grid">
@@ -622,34 +622,6 @@
                             </ul>
                         </div>
 
-                        <div class="pr-details">
-                            <div class="pr-formula-compact">
-                                <strong>PR Formula:</strong> Inverter × Temperature × Soiling × Wiring × Mismatch
-                            </div>
-
-                            <div class="loss-breakdown-compact">
-                                <div class="loss-row">
-                                    <span>Inverter:</span>
-                                    <span id="inverter-efficiency">96.0%</span>
-                                </div>
-                                <div class="loss-row">
-                                    <span>Temperature:</span>
-                                    <span id="temperature-loss">90.0%</span>
-                                </div>
-                                <div class="loss-row">
-                                    <span>Soiling:</span>
-                                    <span id="soiling-loss">98.0%</span>
-                                </div>
-                                <div class="loss-row">
-                                    <span>Wiring:</span>
-                                    <span id="wiring-loss">98.0%</span>
-                                </div>
-                                <div class="loss-row">
-                                    <span>Mismatch:</span>
-                                    <span id="mismatch-loss">98.0%</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -952,6 +924,21 @@
             <h2 id="help-title">Educational Content</h2>
             <div id="help-body">
                 <!-- Content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculation Modal -->
+    <div id="calculation-modal" class="calculation-modal">
+        <div class="calculation-modal-content">
+            <div class="calculation-modal-header">
+                <h2>Solar System Calculations</h2>
+                <span class="calculation-modal-close">&times;</span>
+            </div>
+            <div class="calculation-modal-body">
+                <div id="calculation-content">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
