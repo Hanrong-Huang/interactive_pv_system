@@ -2900,7 +2900,17 @@ function showCalculationModal() {
                     \\qquad
                     POA_{\\text{ground},h} = GHI_h\\,\\rho_g\\,\\frac{1-\\cos\\beta}{2}\\;\\;(\\rho_g\\approx0.2)
                     \\]
-                    Angles: \\(\\theta_{z,h}\\) solar zenith, \\(\\gamma_{s,h}\\) solar azimuth, \\(\\beta\\) tilt, \\(\\gamma\\) module azimuth.
+                </div>
+                
+                <div style="background-color: #f0fdf4; border-top: 1px solid #cbd5e1; padding: 16px; margin-top: 12px;">
+                    <div style="font-weight: 600; color: #475569; margin-bottom: 12px; font-size: 15px;">Interpretation (What each term means)</div>
+                    <ul style="list-style: disc; margin-left: 20px; color: #64748b; line-height: 1.8; margin: 0; padding-left: 20px;">
+                        <li><strong style="color: #1e293b;">Beam</strong>: direct sunlight from the sun's disk. The factor \\(\\cos\\theta_{i,h}\\) measures how directly the sun hits the panel surface.</li>
+                        <li><strong style="color: #1e293b;">Diffuse</strong>: skylight scattered by the atmosphere (uniform sky) plus the bright region near the sun (circumsolar) and a brighter horizon.</li>
+                        <li><strong style="color: #1e293b;">Ground</strong>: light reflected off the ground (albedo \\(\\rho_g\\approx 0.2\\)).</li>
+                        <li><strong style="color: #1e293b;">Angles</strong>: \\(\\beta\\) is panel tilt; \\(\\gamma\\) is panel azimuth; \\(\\theta_{z,h}\\) and \\(\\gamma_{s,h}\\) are the sun's zenith and azimuth computed from the hour's timestamp and site coordinates.</li>
+                        <li><strong style="color: #1e293b;">Units</strong>: Hourly GHI/DNI/DHI are Wh/m². We sum all 8,760 hours and divide by 1000 to get kWh/m²/year.</li>
+                    </ul>
                 </div>
             </div>
             
@@ -2916,19 +2926,6 @@ function showCalculationModal() {
                 <div class="result-item">
                     <span class="result-label">Panel Orientation:</span>
                     <span class="result-value">${siteAnalysis.tiltAngle}° tilt, ${siteAnalysis.azimuthAngle}° azimuth</span>
-                </div>
-            </div>
-
-            <div class="formula-box">
-                <div class="formula-title">Interpretation (What each term means)</div>
-                <div class="formula-content" style="white-space: normal;">
-                    <ul>
-                        <li><strong>Beam</strong>: direct sunlight from the sun's disk. The factor \\(\\cos\\theta_{i,h}\\) measures how directly the sun hits the panel surface.</li>
-                        <li><strong>Diffuse</strong>: skylight scattered by the atmosphere (uniform sky) plus the bright region near the sun (circumsolar) and a brighter horizon.</li>
-                        <li><strong>Ground</strong>: light reflected off the ground (albedo \\(\\rho_g\\)).</li>
-                        <li><strong>Angles</strong>: \\(\\beta\\) is panel tilt; \\(\\gamma\\) is panel azimuth; \\(\\theta_{z,h}\\) and \\(\\gamma_{s,h}\\) are the sun’s zenith and azimuth computed from the hour’s timestamp and site coordinates.</li>
-                        <li><strong>Units</strong>: Hourly GHI/DNI/DHI are Wh/m². We sum all hours and divide by 1000 to get kWh/m²/year.</li>
-                    </ul>
                 </div>
             </div>
         </div>
