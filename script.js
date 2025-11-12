@@ -1574,7 +1574,7 @@ function initializeSiteAnalysis() {
     if (locationSelect) {
         locationSelect.addEventListener('change', function() {
             siteAnalysis.selectedLocation = this.value;
-            updateSiteAnalysis();
+            updateSiteAnalysis(true);
         });
     }
     
@@ -1595,7 +1595,7 @@ function initializeSiteAnalysis() {
     updateSiteAnalysis();
 }
 
-function updateSiteAnalysis() {
+function updateSiteAnalysis(isLocationChange = false) {
     const site = solarSites[siteAnalysis.selectedLocation];
     if (!site) return;
 
@@ -1668,13 +1668,15 @@ function updateSiteAnalysis() {
     }
     
     // Update azimuth slider default when location changes
-    const azimuthSlider = document.getElementById('azimuth-angle');
-    if (azimuthSlider && azimuthSlider.value == 180 && site.optimalAzimuth == 0) {
-        azimuthSlider.value = 0;
-        siteAnalysis.azimuthAngle = 0;
-    } else if (azimuthSlider && azimuthSlider.value == 0 && site.optimalAzimuth == 180) {
-        azimuthSlider.value = 180;
-        siteAnalysis.azimuthAngle = 180;
+    if (isLocationChange) {
+        const azimuthSlider = document.getElementById('azimuth-angle');
+        if (azimuthSlider && azimuthSlider.value == 180 && site.optimalAzimuth == 0) {
+            azimuthSlider.value = 0;
+            siteAnalysis.azimuthAngle = 0;
+        } else if (azimuthSlider && azimuthSlider.value == 0 && site.optimalAzimuth == 180) {
+            azimuthSlider.value = 180;
+            siteAnalysis.azimuthAngle = 180;
+        }
     }
     
     // Update performance impact calculations
@@ -1727,7 +1729,7 @@ function calculatePOA(site, tilt, azimuth) {
 
     // Process all 8,760 hours of data
     for (const hour of hourlyData) {
-        const hourlyPOA = calculateHourlyPOA(hour, tilt, azimuth, site.lat);
+        const hourlyPOA = calculateHourlyPOA(hour, tilt, azimuth, site.lat, site.lon);
         totalAnnualPOA += hourlyPOA.poaGlobal;
         totalAnnualGHI += hour.ghi;
         totalBeam += hourlyPOA.components.beam;
@@ -1750,39 +1752,91 @@ function calculatePOA(site, tilt, azimuth) {
     };
 }
 
-// Calculate POA for a single hour using HDKR transposition model
-function calculateHourlyPOA(hourlyData, tilt, azimuth, latitude) {
-    const beta = tilt * Math.PI / 180;  // Tilt angle in radians
+// ---- Solar geometry utilities (educational-grade accuracy) ----
+function solarPositionFromTimestamp(timestamp, latitude, longitude) {
+    // timestamp format: YYYYMMDDHH (e.g., "2024010815") in local civil hour from dataset
+    const year = parseInt(timestamp.slice(0, 4));
+    const month = parseInt(timestamp.slice(4, 6));
+    const day = parseInt(timestamp.slice(6, 8));
+    const hour = parseInt(timestamp.slice(8, 10));
 
-    // Special case: horizontal panels (tilt = 0)
-    if (tilt === 0) {
-        return {
-            poaGlobal: hourlyData.ghi,
-            components: { beam: 0, diffuse: hourlyData.ghi, ground: 0 }
-        };
+    const date = new Date(Date.UTC(year, month - 1, day, hour, 0, 0));
+
+    // Day of year
+    const start = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+    const doy = Math.floor((date - start) / 86400000) + 1;
+
+    // Fractional year (radians)
+    const gamma = 2 * Math.PI * (doy - 1 + (hour - 12) / 24) / 365;
+
+    // Equation of time (minutes) and solar declination (radians)
+    const eqTime = 229.18 * (0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma)
+        - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma));
+    const decl = 0.006918 - 0.399912 * Math.cos(gamma) + 0.070257 * Math.sin(gamma)
+        - 0.006758 * Math.cos(2 * gamma) + 0.000907 * Math.sin(2 * gamma)
+        - 0.002697 * Math.cos(3 * gamma) + 0.00148 * Math.sin(3 * gamma);
+
+    // Local solar time (hours). Approximate using longitude to shift from UTC.
+    const timeOffsetMin = eqTime + 4 * longitude; // minutes
+    const lst = hour + timeOffsetMin / 60; // local solar time
+
+    // Hour angle (radians)
+    const hra = (Math.PI / 12) * (lst - 12);
+
+    // Convert latitude to radians
+    const phi = latitude * Math.PI / 180;
+
+    // Solar zenith (radians)
+    const cosThetaZ = Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.cos(hra);
+    const thetaZ = Math.acos(Math.min(1, Math.max(-1, cosThetaZ)));
+
+    // Solar azimuth (radians), 0° = North, clockwise positive [0, 2π)
+    const sinAz = (Math.cos(decl) * Math.sin(hra)) / Math.max(1e-6, Math.sin(thetaZ));
+    const cosAz = (Math.sin(decl) * Math.cos(phi) - Math.cos(decl) * Math.sin(phi) * Math.cos(hra)) / Math.max(1e-6, Math.sin(thetaZ));
+    let az = Math.atan2(sinAz, cosAz);
+    if (az < 0) az += 2 * Math.PI;
+
+    return { zenith: thetaZ, azimuth: az };
+}
+
+// Calculate POA for a single hour using solar-geometry beam and HDKR diffuse
+function calculateHourlyPOA(hourlyData, tilt, azimuth, latitude, longitude) {
+    const beta = tilt * Math.PI / 180;  // Tilt angle in radians
+    const gammaSurf = azimuth * Math.PI / 180; // Surface azimuth from North, clockwise
+
+    // If no sun or no irradiance data, return zeros early
+    if (!hourlyData) {
+        return { poaGlobal: 0, components: { beam: 0, diffuse: 0, ground: 0 } };
     }
 
-    // Calculate optimal azimuth based on hemisphere
-    const isSouthernHemisphere = latitude < 0;
-    const optimalAzimuth = isSouthernHemisphere ? 0 : 180;
-    
-    // Calculate azimuth deviation from optimal
-    const azimuthDev = Math.abs(azimuth - optimalAzimuth);
-    const circularDev = Math.min(azimuthDev, 360 - azimuthDev);
-    const azimuthRadians = circularDev * Math.PI / 180;
+    // Solar position
+    const { zenith, azimuth: gammaSun } = solarPositionFromTimestamp(hourlyData.timestamp, latitude, longitude);
+    const cosThetaZ = Math.max(0, Math.cos(zenith));
 
-    // HDKR geometric factor calculation
-    const Rb = Math.cos(beta) + Math.sin(beta) * Math.cos(azimuthRadians);
+    // Incidence angle cosine on the plane
+    const cosThetaI = Math.max(0, Math.cos(zenith) * Math.cos(beta) + Math.sin(zenith) * Math.sin(beta) * Math.cos(gammaSun - gammaSurf));
 
-    // POA components using actual hourly NASA POWER data
-    const poaBeam = hourlyData.dni * Math.max(0, Rb);
-    const poaDiffuse = hourlyData.dhi * ((1 + Math.cos(beta)) / 2);
-    const poaGround = hourlyData.ghi * 0.2 * ((1 - Math.cos(beta)) / 2);  // Albedo = 0.2
-    const poaGlobal = poaBeam + poaDiffuse + poaGround;
+    // Beam (direct) component on the plane
+    const beam = hourlyData.dni * cosThetaI;
 
+    // HDKR anisotropic diffuse with horizon brightening
+    const I_g = hourlyData.ghi;
+    const I_d = hourlyData.dhi;
+    const I_bh = hourlyData.dni * cosThetaZ; // beam on horizontal
+    const Ai = Math.max(0, Math.min(1, I_bh / Math.max(1e-6, I_g)));
+    const isotropic = I_d * (1 - Ai) * ((1 + Math.cos(beta)) / 2);
+    const circumsolar = I_d * Ai * (cosThetaI / Math.max(1e-6, cosThetaZ));
+    const horizon = I_d * 2 * Math.pow(Math.sin(beta / 2), 3);
+    const diffuse = Math.max(0, isotropic + circumsolar + horizon);
+
+    // Ground-reflected
+    const albedo = 0.2;
+    const ground = I_g * albedo * ((1 - Math.cos(beta)) / 2);
+
+    const poaGlobal = Math.max(0, beam + diffuse + ground);
     return {
-        poaGlobal: poaGlobal,
-        components: { beam: poaBeam, diffuse: poaDiffuse, ground: poaGround }
+        poaGlobal,
+        components: { beam, diffuse, ground }
     };
 }
 
@@ -2823,18 +2877,30 @@ function showCalculationModal() {
     content.innerHTML = `
         <div class="calculation-step">
             <h4>Step 1: Plane of Array (POA) Irradiance</h4>
-            <p>Calculated using the HDKR transposition model with NASA POWER hourly data:</p>
+            <p>Calculated hour-by-hour using solar geometry and the HDKR anisotropic diffuse model with NASA POWER data (GHI, DNI, DHI):</p>
             
             <div class="formula-box">
-                <div class="formula-title">POA Calculation</div>
+                <div class="formula-title">POA on a Tilted Plane</div>
                 <div class="formula-content">
-                    POA = POA_Beam + POA_Diffuse + POA_Ground
-                    
-                    Where:
-                    POA_Beam = DNI × Rb
-                    POA_Diffuse = DHI × ((1 + cos(tilt)) / 2)
-                    POA_Ground = GHI × albedo × ((1 - cos(tilt)) / 2)
-                    Rb = cos(tilt) + sin(tilt) × cos(azimuth_deviation)
+                    \\[
+                    POA_h = POA_{\\text{beam},h} + POA_{\\text{diffuse},h} + POA_{\\text{ground},h}
+                    \\]
+                    \\[
+                    POA_{\\text{beam},h} = DNI_h\\,\\max\\big(0,\\cos\\theta_{i,h}\\big)
+                    \\quad\\text{with}\\quad
+                    \\cos\\theta_{i,h} = \\cos\\theta_{z,h}\\cos\\beta + \\sin\\theta_{z,h}\\sin\\beta\\cos(\\gamma_{s,h}-\\gamma)
+                    \\]
+                    \\[
+                    POA_{\\text{diffuse},h} =
+                    DHI_h\\Big[(1-A_{i,h})\\frac{1+\\cos\\beta}{2} + A_{i,h}\\frac{\\cos\\theta_{i,h}}{\\max(\\cos\\theta_{z,h},\\varepsilon)}\\Big]
+                    + DHI_h\\,2\\sin^3\\!\\Big(\\tfrac{\\beta}{2}\\Big)
+                    \\]
+                    \\[
+                    A_{i,h} = \\frac{DNI_h\\,\\max(0,\\cos\\theta_{z,h})}{\\max(GHI_h,\\varepsilon)}
+                    \\qquad
+                    POA_{\\text{ground},h} = GHI_h\\,\\rho_g\\,\\frac{1-\\cos\\beta}{2}\\;\\;(\\rho_g\\approx0.2)
+                    \\]
+                    Angles: \\(\\theta_{z,h}\\) solar zenith, \\(\\gamma_{s,h}\\) solar azimuth, \\(\\beta\\) tilt, \\(\\gamma\\) module azimuth.
                 </div>
             </div>
             
@@ -2850,6 +2916,19 @@ function showCalculationModal() {
                 <div class="result-item">
                     <span class="result-label">Panel Orientation:</span>
                     <span class="result-value">${siteAnalysis.tiltAngle}° tilt, ${siteAnalysis.azimuthAngle}° azimuth</span>
+                </div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-title">Interpretation (What each term means)</div>
+                <div class="formula-content" style="white-space: normal;">
+                    <ul>
+                        <li><strong>Beam</strong>: direct sunlight from the sun's disk. The factor \\(\\cos\\theta_{i,h}\\) measures how directly the sun hits the panel surface.</li>
+                        <li><strong>Diffuse</strong>: skylight scattered by the atmosphere (uniform sky) plus the bright region near the sun (circumsolar) and a brighter horizon.</li>
+                        <li><strong>Ground</strong>: light reflected off the ground (albedo \\(\\rho_g\\)).</li>
+                        <li><strong>Angles</strong>: \\(\\beta\\) is panel tilt; \\(\\gamma\\) is panel azimuth; \\(\\theta_{z,h}\\) and \\(\\gamma_{s,h}\\) are the sun’s zenith and azimuth computed from the hour’s timestamp and site coordinates.</li>
+                        <li><strong>Units</strong>: Hourly GHI/DNI/DHI are Wh/m². We sum all hours and divide by 1000 to get kWh/m²/year.</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -2887,17 +2966,14 @@ function showCalculationModal() {
             <div class="formula-box">
                 <div class="formula-title">Annual Generation Formula</div>
                 <div class="formula-content">
-                    Annual Generation = (POA × Array Power × PR) ÷ STC Irradiance
-                    
-                    Where:
-                    POA = ${currentPOA} kWh/m²/year
-                    Array Power = ${arrayPower} W
-                    PR = ${systemPR.toFixed(3)}
-                    STC Irradiance = 1000 W/m²
-                    
-                    Calculation:
-                    Annual Generation = (${currentPOA} × ${arrayPower} × ${systemPR.toFixed(3)}) ÷ 1000
-                                     = ${annualGeneration.toFixed(0)} kWh/year
+                    \\[
+                    E_{\\text{annual}}\\,[\\mathrm{kWh/yr}] = \\frac{POA_{\\text{annual}}\\cdot P_{\\text{array}}\\cdot PR}{1000}
+                    \\]
+                    With current values:
+                    \\[
+                    E_{\\text{annual}} = \\frac{${currentPOA}\\,\\text{kWh/m}^2\\!/\\text{yr}\\;\\cdot\\;${arrayPower}\\,\\text{W}\\;\\cdot\\;${systemPR.toFixed(3)}}{1000}
+                    = ${annualGeneration.toFixed(0)}\\,\\text{kWh/yr}
+                    \\]
                 </div>
             </div>
             
@@ -2916,11 +2992,14 @@ function showCalculationModal() {
             <div class="formula-box">
                 <div class="formula-title">Specific Yield Formula</div>
                 <div class="formula-content">
-                    Specific Yield = POA × PR
-                    
-                    Calculation:
-                    Specific Yield = ${currentPOA} × ${systemPR.toFixed(3)}
-                                 = ${(currentPOA * systemPR).toFixed(0)} kWh/kWp/year
+                    \\[
+                    Y_f\\,[\\mathrm{kWh/kWp/yr}] = POA_{\\text{annual}}\\cdot PR
+                    \\]
+                    With current values:
+                    \\[
+                    Y_f = ${currentPOA}\\,\\text{kWh/m}^2\\!/\\text{yr}\\;\\cdot\\;${systemPR.toFixed(3)}
+                    = ${(currentPOA * systemPR).toFixed(0)}\\,\\text{kWh/kWp/yr}
+                    \\]
                 </div>
             </div>
             
@@ -2936,11 +3015,16 @@ function showCalculationModal() {
             <h5>Data Sources</h5>
             <ul class="source-list">
                 <li>NASA POWER API v2.8.0 - Hourly irradiance data (8,760 hours/year)</li>
-                <li>HDKR Transposition Model - Industry standard for POA calculation</li>
+                <li>HDKR Transposition Model (anisotropic diffuse + horizon brightening)</li>
+                <li>Solar geometry based on standard spa-like equations (declination, equation of time, hour angle)</li>
                 <li>IEC 61853-1 - Photovoltaic module performance testing standards</li>
             </ul>
         </div>
     `;
 
     modal.style.display = 'block';
+    // Trigger MathJax typesetting for newly injected LaTeX
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([content]).catch(() => {});
+    }
 }
