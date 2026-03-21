@@ -1858,8 +1858,10 @@ function updateSiteAnalysis(isLocationChange = false) {
     updateGlobalSystemState();
     updateDynamicDiagram();
 
-    // Mark site analysis as completed after meaningful interaction
-    markSectionCompleted('site-analysis');
+    // Mark site analysis as completed only after user interaction (not on page load)
+    if (isLocationChange) {
+        markSectionCompleted('site-analysis');
+    }
 }
 
 // POA (Plane of Array) calculation using HDKR transposition model with hourly NASA POWER data

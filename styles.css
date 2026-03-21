@@ -558,7 +558,7 @@ body {
 }
 
 /* Layout: Place System Overview to the right of the diagram */
-#diagram-section {
+#diagram-section.active {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 270px;
     grid-template-areas:
