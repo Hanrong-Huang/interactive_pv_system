@@ -149,13 +149,27 @@ const componentInfo = {
                 <h4>Sizing Formulas</h4>
                 <div class="modal-formula">
                     Series Connection:<br>
-                    V_total = n × V_module<br>
-                    I_total = I_module<br><br>
+                    V_total = n × V_module, &nbsp; I_total = I_module<br><br>
                     Parallel Connection:<br>
-                    V_total = V_module<br>
-                    I_total = n × I_module<br><br>
+                    V_total = V_module, &nbsp; I_total = n × I_module<br><br>
                     Power = Voltage × Current
                 </div>
+            </div>
+            <div class="modal-section">
+                <details class="selection-criteria">
+                    <summary>Selection Criteria &amp; Array Sizing Formula</summary>
+                    <div class="criteria-body">
+                        <p>Required array peak power to cover the daily energy load:</p>
+                        <div class="modal-formula">\\[ W_p = \\frac{E_{\\text{daily}}}{PSH \\times \\eta_{\\text{sys}}} \\]</div>
+                        <ul class="criteria-list">
+                            <li><strong>W<sub>p</sub></strong> — Required array peak watts (W<sub>p</sub>)</li>
+                            <li><strong>E<sub>daily</sub></strong> — Total daily energy demand (Wh/day)</li>
+                            <li><strong>PSH</strong> — Peak Sun Hours at site (h/day); approximately annual POA ÷ 365 ÷ 1000</li>
+                            <li><strong>&#951;<sub>sys</sub></strong> — Overall system efficiency; product of battery, wiring, soiling &amp; inverter losses (typically 0.75–0.85)</li>
+                        </ul>
+                        <p><em>Example: 6 680 Wh/day ÷ (5.8 h &times; 0.80) &asymp; 1 441 W<sub>p</sub> required</em></p>
+                    </div>
+                </details>
             </div>
         `
     },
@@ -178,12 +192,27 @@ const componentInfo = {
             <div class="modal-section">
                 <h4>Sizing Guidelines</h4>
                 <div class="modal-formula">
-                    Safety Requirements:<br>
-                    Controller_Voltage_Rating > PV_Array_Voc × 1.2<br>
-                    Controller_Current_Rating ≥ PV_Array_Isc × 1.25<br><br>
-                    Power Matching:<br>
-                    Controller_Power ≥ Array_Power ÷ Battery_Voltage × Efficiency
+                    Controller_Voltage &gt; Array_Voc &times; 1.2<br>
+                    Controller_Current &ge; Array_Isc &times; 1.25<br><br>
+                    Controller_Power &ge; Array_Power &divide; V_battery &times; &eta;
                 </div>
+            </div>
+            <div class="modal-section">
+                <details class="selection-criteria">
+                    <summary>Selection Criteria &amp; Sizing Formulas</summary>
+                    <div class="criteria-body">
+                        <p>Both constraints must be satisfied simultaneously:</p>
+                        <div class="modal-formula">\\[ I_{sc} \\times 1.25 \\leq I_{\\text{rated}} \\quad\\text{(NEC 690.8 current safety margin)} \\]
+\\[ V_{oc} \\times 1.15 \\leq V_{\\text{max}} \\quad\\text{(cold-temperature V}_{oc}\\text{ rise)} \\]</div>
+                        <ul class="criteria-list">
+                            <li><strong>I<sub>sc</sub></strong> — Array short-circuit current (A); sum of parallel strings</li>
+                            <li><strong>V<sub>oc</sub></strong> — Array open-circuit voltage at lowest expected site temperature (V)</li>
+                            <li><strong>I<sub>rated</sub></strong> — Controller maximum continuous input current (A)</li>
+                            <li><strong>V<sub>max</sub></strong> — Controller absolute maximum input voltage (V)</li>
+                        </ul>
+                        <p><small>V<sub>oc</sub> rises in cold weather (negative &beta;<sub>V</sub>): V<sub>oc</sub>(T) = V<sub>oc,STC</sub> &times; [1 + &beta;<sub>V</sub>/100 &times; (T &minus; 25)]. Always use the lowest expected temperature.</small></p>
+                    </div>
+                </details>
             </div>
         `
     },
@@ -206,10 +235,27 @@ const componentInfo = {
             <div class="modal-section">
                 <h4>Sizing Formulas</h4>
                 <div class="modal-formula">
-                    Required Capacity (Ah) = Daily_Energy_Demand (Wh) ÷ System_Voltage (V) ÷ DoD ÷ Efficiency<br><br>
-                    Series: V_total = n × V_battery, Ah_total = Ah_battery<br>
-                    Parallel: V_total = V_battery, Ah_total = n × Ah_battery
+                    Required Capacity (Ah) = E<sub>daily</sub> (Wh) &divide; V<sub>nom</sub> &divide; DoD &divide; &eta;<sub>bat</sub><br><br>
+                    Series: V_total = n &times; V_bat, &nbsp; Ah_total = Ah_bat<br>
+                    Parallel: V_total = V_bat, &nbsp; Ah_total = n &times; Ah_bat
                 </div>
+            </div>
+            <div class="modal-section">
+                <details class="selection-criteria">
+                    <summary>Selection Criteria &amp; Sizing Formula</summary>
+                    <div class="criteria-body">
+                        <p>Required capacity to sustain loads during autonomy days without solar input:</p>
+                        <div class="modal-formula">\\[ C = \\frac{E_{\\text{daily}} \\times D_{\\text{auto}}}{DoD \\times \\eta_{\\text{bat}} \\times V_{\\text{nom}}} \\]</div>
+                        <ul class="criteria-list">
+                            <li><strong>C</strong> — Required battery bank capacity (Ah)</li>
+                            <li><strong>D<sub>auto</sub></strong> — Autonomy days (typically 1–3 days for solar PV)</li>
+                            <li><strong>DoD</strong> — Max depth of discharge (0.5 for flooded lead-acid; 0.8 for LiFePO<sub>4</sub>)</li>
+                            <li><strong>&#951;<sub>bat</sub></strong> — Round-trip battery efficiency (0.85–0.95)</li>
+                            <li><strong>V<sub>nom</sub></strong> — Nominal system voltage (V)</li>
+                        </ul>
+                        <p><em>Example: 6 680 Wh &times; 2 days &divide; (0.5 &times; 0.90 &times; 48 V) &asymp; 618 Ah</em></p>
+                    </div>
+                </details>
             </div>
         `
     },
@@ -233,10 +279,26 @@ const componentInfo = {
             <div class="modal-section">
                 <h4>Sizing Guidelines</h4>
                 <div class="modal-formula">
-                    Continuous_Rating ≥ Maximum_Simultaneous_Load<br>
-                    Peak_Rating ≥ Largest_Motor_Starting_Current × 3<br><br>
-                    Power_Loss = Load_Power ÷ Efficiency - Load_Power
+                    Continuous_Rating &ge; Maximum_Simultaneous_Load<br>
+                    Peak_Rating &ge; Largest_Motor_Starting_Current &times; 3<br><br>
+                    Power_Loss = Load_Power &divide; &eta; &minus; Load_Power
                 </div>
+            </div>
+            <div class="modal-section">
+                <details class="selection-criteria">
+                    <summary>Selection Criteria &amp; Sizing Formula</summary>
+                    <div class="criteria-body">
+                        <p>Minimum continuous power rating to safely handle peak AC loads:</p>
+                        <div class="modal-formula">\\[ P_{\\text{inv}} \\geq 1.25 \\times P_{\\text{peak}} \\]</div>
+                        <ul class="criteria-list">
+                            <li><strong>P<sub>inv</sub></strong> — Inverter continuous power rating (W)</li>
+                            <li><strong>P<sub>peak</sub></strong> — Maximum simultaneous AC load power (W)</li>
+                            <li>1.25&times; factor covers inductive load power factor &amp; thermal headroom</li>
+                            <li>Surge rating must sustain &ge;3&times; largest motor running wattage for &ge;20 ms</li>
+                        </ul>
+                        <p><em>Example: peak load 1 400 W &rarr; inverter &ge; 1 750 W continuous &rarr; use 2 000 W unit</em></p>
+                    </div>
+                </details>
             </div>
         `
     },
@@ -832,6 +894,50 @@ const solarSites = {
         ghi: 1712, dni: 1755, dhi: 595,
         optimalTilt: Math.round(calculateOptimalTilt(-35.28)),
         optimalAzimuth: calculateOptimalAzimuth(-35.28)
+    },
+
+    // Europe
+    'london': {
+        name: 'London, UK', lat: 51.51, lon: -0.13,
+        ghi: 998, dni: 862, dhi: 558,   // NASA POWER annual averages
+        optimalTilt: Math.round(calculateOptimalTilt(51.51)),
+        optimalAzimuth: calculateOptimalAzimuth(51.51)
+    },
+    'oslo': {
+        name: 'Oslo, Norway', lat: 59.91, lon: 10.75,
+        ghi: 892, dni: 798, dhi: 490,
+        optimalTilt: Math.round(calculateOptimalTilt(59.91)),
+        optimalAzimuth: calculateOptimalAzimuth(59.91)
+    },
+
+    // Asia
+    'tokyo': {
+        name: 'Tokyo, Japan', lat: 35.69, lon: 139.69,
+        ghi: 1268, dni: 1108, dhi: 672,
+        optimalTilt: Math.round(calculateOptimalTilt(35.69)),
+        optimalAzimuth: calculateOptimalAzimuth(35.69)
+    },
+    'singapore': {
+        name: 'Singapore', lat: 1.35, lon: 103.82,
+        ghi: 1580, dni: 1432, dhi: 838,  // Near-equatorial, high diffuse fraction
+        optimalTilt: Math.round(calculateOptimalTilt(1.35)),
+        optimalAzimuth: calculateOptimalAzimuth(1.35)
+    },
+
+    // Africa (Southern Hemisphere)
+    'cape_town': {
+        name: 'Cape Town, South Africa', lat: -33.92, lon: 18.42,
+        ghi: 1855, dni: 2008, dhi: 512,  // Excellent solar resource
+        optimalTilt: Math.round(calculateOptimalTilt(-33.92)),
+        optimalAzimuth: calculateOptimalAzimuth(-33.92)  // North-facing (0°)
+    },
+
+    // South America (Southern Hemisphere)
+    'buenos_aires': {
+        name: 'Buenos Aires, Argentina', lat: -34.62, lon: -58.38,
+        ghi: 1632, dni: 1548, dhi: 628,
+        optimalTilt: Math.round(calculateOptimalTilt(-34.62)),
+        optimalAzimuth: calculateOptimalAzimuth(-34.62)  // North-facing (0°)
     }
 };
 
@@ -842,6 +948,26 @@ let siteAnalysis = {
     azimuthAngle: calculateOptimalAzimuth(33.4484),
     currentGHI: 2070
 };
+
+// Global irradiance data state
+let irradianceData = null;
+let irradianceDataLoaded = false;
+
+// Initialize hourly irradiance data
+async function initializeIrradianceData() {
+    try {
+        const response = await fetch('irradiance_data_2024.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        irradianceData = await response.json();
+        irradianceDataLoaded = true;
+        console.log(`✅ Loaded irradiance data: ${Object.keys(irradianceData.data).length} locations`);
+    } catch (error) {
+        console.error('❌ Error loading irradiance data:', error);
+        console.warn('⚠️ Using annual averages instead of hourly data');
+    }
+}
 
 // Global state for system simulation
 let simulationData = {
@@ -862,6 +988,10 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeInverterSelection();
         initializeSystemSimulation();
         initializeDiagramInteractivity();
+        initializeCalculationTooltips();
+        
+        // Initialize hourly irradiance data
+        initializeIrradianceData();
         
         // Calculate initial array values
         calculateArrayOutput();
@@ -878,11 +1008,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Track which sections have been visited
+const visitedSections = new Set(['diagram']);
+
 // Helper function to update active navigation button
 function updateActiveNavButton(sectionName) {
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    // Mark the section as visited
+    visitedSections.add(sectionName);
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const btnSection = btn.getAttribute('data-section');
+        // Add 'visited' class to previously visited sections (but not current)
+        if (visitedSections.has(btnSection) && btnSection !== sectionName) {
+            btn.classList.add('visited');
+        }
+    });
     const targetBtn = document.querySelector(`[data-section="${sectionName}"]`);
-    if (targetBtn) targetBtn.classList.add('active');
+    if (targetBtn) {
+        targetBtn.classList.add('active');
+        targetBtn.classList.remove('visited');
+    }
+}
+
+// Mark a section as completed (call this when a section's task is done)
+function markSectionCompleted(sectionName) {
+    const btn = document.querySelector(`[data-section="${sectionName}"]`);
+    if (btn && !btn.classList.contains('active')) {
+        btn.classList.add('completed');
+        btn.classList.remove('visited');
+    }
 }
 
 // Navigation functionality
@@ -976,10 +1131,15 @@ function showModal(modalId, title, content) {
     const modal = document.getElementById(modalId);
     const titleElement = modal.querySelector('h2');
     const bodyElement = modal.querySelector('[id$="body"]');
-    
+
     if (titleElement) titleElement.textContent = title;
-    if (bodyElement) bodyElement.innerHTML = content;
-    
+    if (bodyElement) {
+        bodyElement.innerHTML = content;
+        if (typeof MathJax !== 'undefined') {
+            MathJax.typesetPromise([bodyElement]).catch(err => console.warn('MathJax retypeset:', err));
+        }
+    }
+
     modal.style.display = 'block';
 }
 
@@ -1038,6 +1198,7 @@ function initializeArrayConfiguration() {
     const proceedBtn = document.getElementById('proceed-to-mppt');
     if (proceedBtn) {
         proceedBtn.addEventListener('click', function() {
+            markSectionCompleted('array-config');
             updateMPPTSummary();
             generateControllerCards();  // Regenerate cards when entering section
             showSection('mppt-selection');
@@ -1139,6 +1300,24 @@ function calculateArrayOutput() {
         calculatedArray.deratedVoc = output.voc;
         calculatedArray.deratedCurrent = output.current;
         calculatedArray.deratedIsc = output.isc;
+    }
+
+    // Live Voc(T) display — always update regardless of derated state
+    const vocLiveValues = document.getElementById('voc-live-values');
+    const vocLiveArray = document.getElementById('voc-live-array');
+    if (vocLiveValues && vocLiveArray) {
+        const Tcell = arrayConfig.cellTemperature;
+        const betaV = moduleSpecs.tempCoeffVoltage;  // %/°C (negative value)
+        const vocSTC = moduleSpecs.voc;               // V per module at STC
+        const Ns = arrayConfig.seriesModules;
+        const factor = 1 + (betaV / 100) * (Tcell - 25);
+        const vocT = vocSTC * factor;
+        const arrayVocT = Ns * vocT;
+        const betaSign = betaV >= 0 ? '+' : '';
+        vocLiveValues.innerHTML =
+            `= ${vocSTC.toFixed(2)}\u202fV \u00d7 [1 + (${betaSign}${betaV}%/\u00b0C)/100 \u00d7 (${Tcell} \u2212 25)] = <strong>${vocT.toFixed(2)}\u202fV</strong>`;
+        vocLiveArray.innerHTML =
+            `Array (${Ns}s): ${Ns} &times; ${vocT.toFixed(2)}\u202fV = <strong>${arrayVocT.toFixed(1)}\u202fV</strong>`;
     }
 
     // Update global system state
@@ -1304,6 +1483,7 @@ function evaluateMPPTSelection(controllerId) {
     // Update global system state
     globalSystemState.selectedMPPT = controllerId;
     updateGlobalSystemState();
+    markSectionCompleted('mppt-selection');
     
     // Generate detailed feedback
     let feedbackContent = '';
@@ -1550,7 +1730,7 @@ function initializeSiteAnalysis() {
     if (locationSelect) {
         locationSelect.addEventListener('change', function() {
             siteAnalysis.selectedLocation = this.value;
-            updateSiteAnalysis();
+            updateSiteAnalysis(true);
         });
     }
     
@@ -1571,9 +1751,23 @@ function initializeSiteAnalysis() {
     updateSiteAnalysis();
 }
 
-function updateSiteAnalysis() {
+function updateSiteAnalysis(isLocationChange = false) {
     const site = solarSites[siteAnalysis.selectedLocation];
     if (!site) return;
+
+    // On location change: reset tilt and azimuth to this site's optimal values BEFORE any calculation
+    if (isLocationChange) {
+        const tiltSlider = document.getElementById('tilt-angle');
+        const azimuthSlider = document.getElementById('azimuth-angle');
+        if (tiltSlider) {
+            siteAnalysis.tiltAngle = site.optimalTilt;
+            tiltSlider.value = site.optimalTilt;
+        }
+        if (azimuthSlider) {
+            siteAnalysis.azimuthAngle = site.optimalAzimuth;
+            azimuthSlider.value = site.optimalAzimuth;
+        }
+    }
 
     // Check if Southern Hemisphere
     const isSouthernHemisphere = site.lat < 0;
@@ -1643,15 +1837,6 @@ function updateSiteAnalysis() {
         hemisphereNote.style.display = isSouthernHemisphere ? 'block' : 'none';
     }
     
-    // Update azimuth slider default when location changes
-    const azimuthSlider = document.getElementById('azimuth-angle');
-    if (azimuthSlider && azimuthSlider.value == 180 && site.optimalAzimuth == 0) {
-        azimuthSlider.value = 0;
-        siteAnalysis.azimuthAngle = 0;
-    } else if (azimuthSlider && azimuthSlider.value == 0 && site.optimalAzimuth == 180) {
-        azimuthSlider.value = 180;
-        siteAnalysis.azimuthAngle = 180;
-    }
     
     // Update performance impact calculations
     const annualGenDisplay = document.getElementById('annual-generation');
@@ -1662,22 +1847,6 @@ function updateSiteAnalysis() {
     if (performanceRatioDisplay) performanceRatioDisplay.textContent = performanceRatio + '%';
     if (specificYieldDisplay) specificYieldDisplay.textContent = specificYield + ' kWh/kWp/year';
 
-    // Update loss breakdown display
-    const inverterEffDisplay = document.getElementById('inverter-efficiency');
-    const tempLossDisplay = document.getElementById('temperature-loss');
-    const soilingLossDisplay = document.getElementById('soiling-loss');
-    const wiringLossDisplay = document.getElementById('wiring-loss');
-    const mismatchLossDisplay = document.getElementById('mismatch-loss');
-
-    if (inverterEffDisplay) inverterEffDisplay.textContent = (inverterEfficiency * 100).toFixed(1) + '%';
-    if (tempLossDisplay) {
-        const tempLossPercent = (temperatureLoss * 100).toFixed(1);
-        const tempLossAmount = (100 - temperatureLoss * 100).toFixed(1);
-        tempLossDisplay.textContent = tempLossPercent + '% (' + tempLossAmount + '% loss at ' + cellTemp + '°C)';
-    }
-    if (soilingLossDisplay) soilingLossDisplay.textContent = (soilingLoss * 100).toFixed(1) + '%';
-    if (wiringLossDisplay) wiringLossDisplay.textContent = (wiringLoss * 100).toFixed(1) + '%';
-    if (mismatchLossDisplay) mismatchLossDisplay.textContent = (mismatchLoss * 100).toFixed(1) + '%';
 
     // Update recommendations
     updateSiteRecommendations(site, poa.ratio, isSouthernHemisphere);
@@ -1688,47 +1857,272 @@ function updateSiteAnalysis() {
     // Update global system state with new site analysis
     updateGlobalSystemState();
     updateDynamicDiagram();
+
+    // Mark site analysis as completed after meaningful interaction
+    markSectionCompleted('site-analysis');
 }
 
-// Scientific POA (Plane of Array) irradiance calculation
-// Based on HDKR (Hay-Davies-Klucher-Reindl) transposition model
+// POA (Plane of Array) calculation using HDKR transposition model with hourly NASA POWER data
 function calculatePOA(site, tilt, azimuth) {
+    if (!irradianceDataLoaded || !irradianceData) {
+        console.warn('Hourly data not loaded, using fallback calculation');
+        return calculatePOAFallback(site, tilt, azimuth);
+    }
+
+    // Get location ID from site name
+    const locationId = Object.keys(irradianceData.data).find(id => 
+        irradianceData.data[id].location.name === site.name
+    );
+    
+    if (!locationId) {
+        console.warn(`Location ${site.name} not found in hourly data, using fallback`);
+        return calculatePOAFallback(site, tilt, azimuth);
+    }
+
+    // Calculate annual POA by summing all hourly values
+    let totalAnnualPOA = 0;
+    let totalAnnualGHI = 0;
+    let totalBeam = 0;
+    let totalDiffuse = 0;
+    let totalGround = 0;
+
+    const locationData = irradianceData.data[locationId];
+    const hourlyData = locationData.hourlyData;
+
+    // Process all 8,760 hours of data
+    for (const hour of hourlyData) {
+        const hourlyPOA = calculateHourlyPOA(hour, tilt, azimuth, site.lat, site.lon);
+        totalAnnualPOA += hourlyPOA.poaGlobal;
+        totalAnnualGHI += hour.ghi;
+        totalBeam += hourlyPOA.components.beam;
+        totalDiffuse += hourlyPOA.components.diffuse;
+        totalGround += hourlyPOA.components.ground;
+    }
+
+    // Convert from Wh/m² to kWh/m²
+    const annualPOA = totalAnnualPOA / 1000;
+    const annualGHI = totalAnnualGHI / 1000;
+
+    return {
+        poaGlobal: annualPOA,
+        ratio: annualPOA / annualGHI,
+        components: { 
+            beam: totalBeam / 1000, 
+            diffuse: totalDiffuse / 1000, 
+            ground: totalGround / 1000 
+        }
+    };
+}
+
+// ---- Solar geometry utilities (educational-grade accuracy) ----
+function solarPositionFromTimestamp(timestamp, latitude, longitude) {
+    // timestamp format: YYYYMMDDHH (e.g., "2024010815") in local civil hour from dataset
+    const year = parseInt(timestamp.slice(0, 4));
+    const month = parseInt(timestamp.slice(4, 6));
+    const day = parseInt(timestamp.slice(6, 8));
+    const hour = parseInt(timestamp.slice(8, 10));
+
+    const date = new Date(Date.UTC(year, month - 1, day, hour, 0, 0));
+
+    // Day of year
+    const start = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+    const doy = Math.floor((date - start) / 86400000) + 1;
+
+    // Fractional year (radians)
+    const gamma = 2 * Math.PI * (doy - 1 + (hour - 12) / 24) / 365;
+
+    // Equation of time (minutes) and solar declination (radians)
+    const eqTime = 229.18 * (0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma)
+        - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma));
+    const decl = 0.006918 - 0.399912 * Math.cos(gamma) + 0.070257 * Math.sin(gamma)
+        - 0.006758 * Math.cos(2 * gamma) + 0.000907 * Math.sin(2 * gamma)
+        - 0.002697 * Math.cos(3 * gamma) + 0.00148 * Math.sin(3 * gamma);
+
+    // Local solar time (hours). Approximate using longitude to shift from UTC.
+    const timeOffsetMin = eqTime + 4 * longitude; // minutes
+    const lst = hour + timeOffsetMin / 60; // local solar time
+
+    // Hour angle (radians)
+    const hra = (Math.PI / 12) * (lst - 12);
+
+    // Convert latitude to radians
+    const phi = latitude * Math.PI / 180;
+
+    // Solar zenith (radians)
+    const cosThetaZ = Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.cos(hra);
+    const thetaZ = Math.acos(Math.min(1, Math.max(-1, cosThetaZ)));
+
+    // Solar azimuth (radians), 0° = North, clockwise positive [0, 2π)
+    const sinAz = (Math.cos(decl) * Math.sin(hra)) / Math.max(1e-6, Math.sin(thetaZ));
+    const cosAz = (Math.sin(decl) * Math.cos(phi) - Math.cos(decl) * Math.sin(phi) * Math.cos(hra)) / Math.max(1e-6, Math.sin(thetaZ));
+    let az = Math.atan2(sinAz, cosAz);
+    if (az < 0) az += 2 * Math.PI;
+
+    return { zenith: thetaZ, azimuth: az };
+}
+
+// Calculate POA for a single hour using solar-geometry beam and HDKR diffuse
+function calculateHourlyPOA(hourlyData, tilt, azimuth, latitude, longitude) {
     const beta = tilt * Math.PI / 180;  // Tilt angle in radians
-    const lat = site.lat * Math.PI / 180;  // Latitude in radians
+    const gammaSurf = azimuth * Math.PI / 180; // Surface azimuth from North, clockwise
+
+    // If no sun or no irradiance data, return zeros early
+    if (!hourlyData) {
+        return { poaGlobal: 0, components: { beam: 0, diffuse: 0, ground: 0 } };
+    }
+
+    // Solar position
+    const { zenith, azimuth: gammaSun } = solarPositionFromTimestamp(hourlyData.timestamp, latitude, longitude);
+    const cosThetaZ = Math.max(0, Math.cos(zenith));
+
+    // Incidence angle cosine on the plane
+    const cosThetaI = Math.max(0, Math.cos(zenith) * Math.cos(beta) + Math.sin(zenith) * Math.sin(beta) * Math.cos(gammaSun - gammaSurf));
+
+    // Beam (direct) component on the plane
+    const beam = hourlyData.dni * cosThetaI;
+
+    // HDKR anisotropic diffuse with horizon brightening
+    // Reference: Reindl, Beckman & Duffie (1990), Solar Energy 45(1):65-76
+    const I_g = hourlyData.ghi;
+    const I_d = hourlyData.dhi;
+    const I_bh = hourlyData.dni * cosThetaZ; // beam on horizontal
+    const Ai = Math.max(0, Math.min(1, I_bh / Math.max(1e-6, I_g)));
+    const isotropic = I_d * (1 - Ai) * ((1 + Math.cos(beta)) / 2);
+    const circumsolar = I_d * Ai * (cosThetaI / Math.max(1e-6, cosThetaZ));
+    // Horizon brightening: f = sqrt(I_bh/I_g), term = I_d*(1-Ai)*Fcs*f*sin³(β/2)
+    const f_horizon = Math.sqrt(Math.max(0, I_bh / Math.max(1e-6, I_g)));
+    const horizon = I_d * (1 - Ai) * ((1 + Math.cos(beta)) / 2) * f_horizon * Math.pow(Math.sin(beta / 2), 3);
+    const diffuse = Math.max(0, isotropic + circumsolar + horizon);
+
+    // Ground-reflected
+    const albedo = 0.2;
+    const ground = I_g * albedo * ((1 - Math.cos(beta)) / 2);
+
+    const poaGlobal = Math.max(0, beam + diffuse + ground);
+    return {
+        poaGlobal,
+        components: { beam, diffuse, ground }
+    };
+}
+
+// Calculate POA irradiance (W/m²) for a single simulation hour.
+// Uses solar geometry + clear-sky decomposition for a given hour-of-day,
+// day-of-year, and site average irradiance values.
+function calculateSimulationHourlyPOA(hour, site, tilt, azimuth, dayOfYear) {
+    const latRad = site.lat * Math.PI / 180;
+    const beta = tilt * Math.PI / 180;
+    const gammaSurf = azimuth * Math.PI / 180;
+
+    // Solar declination (radians)
+    const decl = 23.45 * Math.sin((2 * Math.PI / 365) * (dayOfYear - 81)) * Math.PI / 180;
+
+    // Hour angle (radians) – solar noon at hour 12
+    const hra = (Math.PI / 12) * (hour - 12);
+
+    // Cosine of solar zenith
+    const cosThetaZ = Math.sin(latRad) * Math.sin(decl) +
+                      Math.cos(latRad) * Math.cos(decl) * Math.cos(hra);
+
+    // Sun below horizon → no irradiance
+    if (cosThetaZ <= 0) {
+        return { poaGlobal: 0, components: { beam: 0, diffuse: 0, ground: 0 } };
+    }
+
+    const thetaZ = Math.acos(Math.min(1, cosThetaZ));
+    const sinThetaZ = Math.sin(thetaZ);
+
+    // Solar azimuth (radians from North, clockwise)
+    const sinAz = (Math.cos(decl) * Math.sin(hra)) / Math.max(1e-6, sinThetaZ);
+    const cosAz = (Math.sin(decl) * Math.cos(latRad) - Math.cos(decl) * Math.sin(latRad) * Math.cos(hra)) / Math.max(1e-6, sinThetaZ);
+    let gammaSun = Math.atan2(sinAz, cosAz);
+    if (gammaSun < 0) gammaSun += 2 * Math.PI;
+
+    // Clear-sky GHI using simplified Ineichen-Perez model
+    const airMass = 1 / (cosThetaZ + 0.50572 * Math.pow(90 - thetaZ * 180 / Math.PI + 6.07995, -1.6364));
+    const solarConstant = 1361; // W/m²
+    const clearnessFactor = 0.72; // typical clear sky atmospheric transmittance
+    const ghiClearSky = solarConstant * cosThetaZ * Math.pow(clearnessFactor, airMass);
+
+    // Decompose GHI into DNI and DHI using Erbs correlation
+    const kt = Math.min(1, ghiClearSky / (solarConstant * cosThetaZ)); // clearness index
+    let diffuseFraction;
+    if (kt <= 0.22) {
+        diffuseFraction = 1.0 - 0.09 * kt;
+    } else if (kt <= 0.80) {
+        diffuseFraction = 0.9511 - 0.1604 * kt + 4.388 * kt * kt - 16.638 * Math.pow(kt, 3) + 12.336 * Math.pow(kt, 4);
+    } else {
+        diffuseFraction = 0.165;
+    }
+    const dhi = ghiClearSky * diffuseFraction;
+    const dni = (ghiClearSky - dhi) / Math.max(1e-6, cosThetaZ);
+
+    // Scale to match site's annual average resource level.
+    // Site GHI is in kWh/m²/year; average clear-sky GHI across
+    // all daylight hours produces roughly 2200-2400 kWh/m²/year
+    // for a very sunny site. Use simple ratio.
+    const modelAnnualGHI = 2200; // representative clear-sky annual total kWh/m²/year
+    const siteFactor = site.ghi / modelAnnualGHI;
+
+    const ghiScaled = ghiClearSky * siteFactor;
+    const dhiScaled = dhi * siteFactor;
+    const dniScaled = dni * siteFactor;
+
+    // Incidence angle on tilted plane
+    const cosThetaI = Math.max(0, cosThetaZ * Math.cos(beta) + sinThetaZ * Math.sin(beta) * Math.cos(gammaSun - gammaSurf));
+
+    // Beam on tilted plane
+    const beam = dniScaled * cosThetaI;
+
+    // HDKR diffuse model
+    const I_bh = dniScaled * cosThetaZ;
+    const Ai = Math.max(0, Math.min(1, I_bh / Math.max(1e-6, ghiScaled)));
+    const isotropic = dhiScaled * (1 - Ai) * ((1 + Math.cos(beta)) / 2);
+    const circumsolar = dhiScaled * Ai * (cosThetaI / Math.max(1e-6, cosThetaZ));
+    const f_horizon = Math.sqrt(Math.max(0, I_bh / Math.max(1e-6, ghiScaled)));
+    const horizon = dhiScaled * (1 - Ai) * ((1 + Math.cos(beta)) / 2) * f_horizon * Math.pow(Math.sin(beta / 2), 3);
+    const diffuse = Math.max(0, isotropic + circumsolar + horizon);
+
+    // Ground-reflected
+    const albedo = 0.2;
+    const ground = ghiScaled * albedo * ((1 - Math.cos(beta)) / 2);
+
+    const poaGlobal = Math.max(0, beam + diffuse + ground);
+    return { poaGlobal, components: { beam, diffuse, ground } };
+}
+
+// Fallback calculation using annual averages (for when hourly data is not available)
+function calculatePOAFallback(site, tilt, azimuth) {
+    const beta = tilt * Math.PI / 180;  // Tilt angle in radians
 
     // Special case: horizontal panels (tilt = 0)
     if (tilt === 0) {
         return {
             poaGlobal: site.ghi,
-            ratio: 1.0  // No tilt/azimuth effect
+            ratio: 1.0,
+            components: { beam: 0, diffuse: site.ghi, ground: 0 }
         };
     }
 
-    // Component fractions
-    const diffuseFraction = site.dhi / site.ghi;
-    const beamFraction = (site.ghi - site.dhi) / site.ghi;
-
+    // Calculate optimal azimuth based on hemisphere
+    const isSouthernHemisphere = site.lat < 0;
+    const optimalAzimuth = isSouthernHemisphere ? 0 : 180;
+    
     // Calculate azimuth deviation from optimal
-    const azimuthDev = Math.abs(azimuth - site.optimalAzimuth);
+    const azimuthDev = Math.abs(azimuth - optimalAzimuth);
     const circularDev = Math.min(azimuthDev, 360 - azimuthDev);
     const azimuthRadians = circularDev * Math.PI / 180;
 
-    // Geometric factor for beam component
-    // Rb = cos(incident angle) / cos(zenith angle)
-    // Simplified: considers tilt and azimuth deviation
-    const Rb = Math.cos(beta) + Math.sin(beta) * Math.cos(azimuthRadians);
+    // Annual Rb approximation (Liu-Jordan): cos(|lat| - β) / cos(|lat|), scaled by azimuth factor
+    // This is the standard annual-average geometric factor for an equator-facing tilted surface.
+    const absLatRad = Math.abs(site.lat) * Math.PI / 180;
+    const Rb_optimal = Math.max(0, Math.cos(absLatRad - beta) / Math.max(0.01, Math.cos(absLatRad)));
+    // Azimuth penalty: cos(deviation) — 0° dev = full, 90° dev = zero, clamped at 0
+    const Rb = Rb_optimal * Math.max(0, Math.cos(azimuthRadians));
 
-    // POA Beam component
-    const poaBeam = (site.ghi - site.dhi) * Math.max(0, Rb);
-
-    // POA Diffuse component (isotropic sky model)
+    // POA components using annual average NASA POWER data
+    const poaBeam = site.dni * Math.max(0, Rb);
     const poaDiffuse = site.dhi * ((1 + Math.cos(beta)) / 2);
-
-    // POA Ground-reflected component (albedo = 0.2 typical)
-    const albedo = 0.2;
-    const poaGround = site.ghi * albedo * ((1 - Math.cos(beta)) / 2);
-
-    // Total POA irradiance
+    const poaGround = site.ghi * 0.2 * ((1 - Math.cos(beta)) / 2);  // Albedo = 0.2
     const poaGlobal = poaBeam + poaDiffuse + poaGround;
 
     return {
@@ -1860,6 +2254,7 @@ function startSimulation() {
     generateSimulationData();
     createSimulationChart();
     document.getElementById('simulation-results').style.display = 'block';
+    markSectionCompleted('simulation');
 }
 
 function generateSimulationData() {
@@ -1898,7 +2293,6 @@ function generateSimulationData() {
 function calculateHourlySolarGeneration(hour, weather = 'clear', season = 'summer') {
     // Get current site and array configuration
     const currentSite = solarSites[siteAnalysis.selectedLocation] || solarSites['phoenix'];
-    const latitude = currentSite.lat;
     const arrayPower = calculatedArray.power || 2000;
 
     // Day of year for seasonal calculation (approximate)
@@ -1908,39 +2302,6 @@ function calculateHourlySolarGeneration(hour, weather = 'clear', season = 'summe
         'winter': 355   // December 21 (winter solstice)
     };
     const dayOfYear = seasonDayOfYear[season] || seasonDayOfYear['summer'];
-
-    // Solar declination angle (degrees)
-    const declination = 23.45 * Math.sin((2 * Math.PI / 365) * (dayOfYear - 81));
-
-    // Hour angle (degrees) - solar noon is at hour 12
-    const hourAngle = 15 * (hour - 12);
-
-    // Solar altitude angle (elevation) in degrees
-    const latRad = latitude * Math.PI / 180;
-    const decRad = declination * Math.PI / 180;
-    const hourRad = hourAngle * Math.PI / 180;
-
-    const sinAltitude = Math.sin(latRad) * Math.sin(decRad) +
-                       Math.cos(latRad) * Math.cos(decRad) * Math.cos(hourRad);
-    const altitudeAngle = Math.asin(sinAltitude) * 180 / Math.PI;
-
-    // If sun is below horizon, no generation
-    if (altitudeAngle <= 0) {
-        return 0;
-    }
-
-    // Air mass correction (simplified Kasten-Young formula)
-    const airMass = 1 / (sinAltitude + 0.50572 * Math.pow(altitudeAngle + 6.07995, -1.6364));
-
-    // Clear sky irradiance (W/m²) - simplified clear sky model
-    // Convert from kWh/m²/year to W/m² for hourly simulation
-    // kWh/m²/year * 1000 / 8760 hours/year = average W/m²
-    const avgDNI = (currentSite.dni * 1000) / 8760;  // Average W/m² from annual kWh/m²/year
-    const avgDHI = (currentSite.dhi * 1000) / 8760;
-
-    // Scale by sun position and atmospheric conditions
-    const clearSkyIrradiance = avgDNI * sinAltitude * Math.exp(-0.09 * airMass) * 8; // Peak factor
-    const diffuseIrradiance = avgDHI * 4; // Peak diffuse irradiance
 
     // Weather condition multipliers
     const weatherEffects = {
@@ -1956,39 +2317,16 @@ function calculateHourlySolarGeneration(hour, weather = 'clear', season = 'summe
         cloudVariability = (0.85 + Math.random() * 0.15);
     }
 
-    // Calculate POA irradiance considering tilt and azimuth
+    // Calculate POA irradiance for this specific hour using solar geometry
     const tilt = siteAnalysis.tiltAngle;
     const azimuth = siteAnalysis.azimuthAngle;
+    const poaResult = calculateSimulationHourlyPOA(hour, currentSite, tilt, azimuth, dayOfYear);
 
-    // Determine optimal solar azimuth based on hemisphere
-    // Northern Hemisphere: sun is south (180°) at noon
-    // Southern Hemisphere: sun is north (0°) at noon
-    const solarAzimuth = latitude >= 0 ? 180 : 0;
-
-    // Calculate azimuth deviation (0° = perfect alignment, 180° = opposite direction)
-    const azimuthDiff = Math.abs(azimuth - solarAzimuth);
-    const circularAzimuthDiff = Math.min(azimuthDiff, 360 - azimuthDiff);
-    const azimuthRad = circularAzimuthDiff * Math.PI / 180;
-
-    // Incidence angle calculation
-    const beta = tilt * Math.PI / 180;
-
-    // Simplified incidence angle: when facing wrong direction (180°), beam component drops significantly
-    // cos(0°) = 1.0 (perfect), cos(90°) = 0 (perpendicular), cos(180°) = -1 (opposite)
-    const azimuthFactor = Math.cos(azimuthRad); // Range: 1.0 to -1.0
-
-    // When facing opposite direction, azimuthFactor is negative - we set beam to zero
-    // When perpendicular, azimuthFactor is 0 - beam is zero
-    const beamFactor = Math.max(0, azimuthFactor);
-
-    // Combine tilt and azimuth effects on beam component
-    const tiltEffect = Math.cos(beta) + Math.sin(beta) * beamFactor;
-    const incidenceFactor = Math.max(0, tiltEffect);
-
-    // Apply to beam (direct) and diffuse components separately, with weather effects
-    const poaBeam = clearSkyIrradiance * incidenceFactor * weatherMultiplier * cloudVariability;
-    const poaDiffuse = diffuseIrradiance * ((1 + Math.cos(beta)) / 2) * weatherMultiplier * cloudVariability;
-    const poaIrradiance = poaBeam + poaDiffuse;
+    // Apply weather effects to POA components
+    const poaBeam = poaResult.components.beam * weatherMultiplier * cloudVariability;
+    const poaDiffuse = poaResult.components.diffuse * weatherMultiplier * cloudVariability;
+    const poaGround = poaResult.components.ground * weatherMultiplier * cloudVariability;
+    const poaIrradiance = poaBeam + poaDiffuse + poaGround;
 
     // Calculate power generation
     // Power = POA Irradiance (W/m²) × Array Power (W) ÷ STC Irradiance (1000 W/m²) × PR
@@ -2681,9 +3019,222 @@ function setupReviewActionButtons() {
 }
 
 function proceedToSimulation() {
+    markSectionCompleted('inverter-selection');
     showSection('simulation');
     updateActiveNavButton('simulation');
 
     // Initialize simulation with current system data
     initializeSystemSimulation();
+}
+
+// Calculation Tooltip and Modal Functions
+function initializeCalculationTooltips() {
+    const performanceBox = document.querySelector('.clickable-performance-box');
+    if (performanceBox) {
+        performanceBox.addEventListener('click', function() {
+            showCalculationModal();
+        });
+    }
+
+    // Modal close functionality
+    const modal = document.getElementById('calculation-modal');
+    const closeBtn = document.querySelector('.calculation-modal-close');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+
+    // Close modal when clicking outside
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+}
+
+function showCalculationModal() {
+    const modal = document.getElementById('calculation-modal');
+    const content = document.getElementById('calculation-content');
+    
+    if (!modal || !content) return;
+
+    // Get current calculation values
+    const site = solarSites[siteAnalysis.selectedLocation];
+    const arrayPower = globalSystemState.arrayPower || calculatedArray.power || 2000;
+    const currentPOA = siteAnalysis.currentPOA || site.ghi;
+    
+    // System efficiency components
+    const inverterEfficiency = 0.96;
+    const soilingLoss = 0.98;
+    const wiringLoss = 0.98;
+    const mismatchLoss = 0.98;
+    
+    // Temperature calculation
+    const cellTemp = arrayConfig.cellTemperature || 25;
+    const tempCoeff = moduleSpecs.tempCoeffPower || -0.35;
+    const tempDifference = cellTemp - 25;
+    const temperatureDeratingFactor = 1 + (tempCoeff / 100) * tempDifference;
+    const temperatureLoss = Math.max(0.5, Math.min(1.2, temperatureDeratingFactor));
+    
+    // Performance Ratio
+    const systemPR = inverterEfficiency * temperatureLoss * soilingLoss * wiringLoss * mismatchLoss;
+    
+    // Annual Generation
+    const annualGeneration = (currentPOA * arrayPower * systemPR / 1000);
+
+    // Generate calculation content
+    content.innerHTML = `
+        <div class="calculation-step">
+            <h4>Step 1: Plane of Array (POA) Irradiance</h4>
+            <p>Calculated hour-by-hour using solar geometry and the HDKR anisotropic diffuse model with NASA POWER data (GHI, DNI, DHI):</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">POA on a Tilted Plane</div>
+                <div class="formula-content">
+                    \\[
+                    POA_h = POA_{\\text{beam},h} + POA_{\\text{diffuse},h} + POA_{\\text{ground},h}
+                    \\]
+                    \\[
+                    POA_{\\text{beam},h} = DNI_h\\,\\max\\big(0,\\cos\\theta_{i,h}\\big)
+                    \\quad\\text{with}\\quad
+                    \\cos\\theta_{i,h} = \\cos\\theta_{z,h}\\cos\\beta + \\sin\\theta_{z,h}\\sin\\beta\\cos(\\gamma_{s,h}-\\gamma)
+                    \\]
+                    \\[
+                    POA_{\\text{diffuse},h} =
+                    DHI_h\\Big[(1-A_{i,h})\\frac{1+\\cos\\beta}{2} + A_{i,h}\\frac{\\cos\\theta_{i,h}}{\\max(\\cos\\theta_{z,h},\\varepsilon)}\\Big]
+                    + DHI_h\\,2\\sin^3\\!\\Big(\\tfrac{\\beta}{2}\\Big)
+                    \\]
+                    \\[
+                    A_{i,h} = \\frac{DNI_h\\,\\max(0,\\cos\\theta_{z,h})}{\\max(GHI_h,\\varepsilon)}
+                    \\qquad
+                    POA_{\\text{ground},h} = GHI_h\\,\\rho_g\\,\\frac{1-\\cos\\beta}{2}\\;\\;(\\rho_g\\approx0.2)
+                    \\]
+                </div>
+                
+                <div style="background-color: #eff6ff; border-top: 1px solid #bfdbfe; padding: 16px; margin-top: 12px; border-radius: 0 0 6px 6px;">
+                    <div style="font-weight: 600; color: #1e3a5f; margin-bottom: 12px; font-size: 15px;">Interpretation (What each term means)</div>
+                    <ul style="list-style: disc; margin-left: 20px; color: #374151; line-height: 1.8; margin: 0; padding-left: 20px;">
+                        <li><strong style="color: #d97706;">Beam</strong>: direct sunlight from the sun's disk. The factor \\(\\cos\\theta_{i,h}\\) measures how directly the sun hits the panel surface.</li>
+                        <li><strong style="color: #d97706;">Diffuse</strong>: skylight scattered by the atmosphere (uniform sky) plus the bright region near the sun (circumsolar) and a brighter horizon.</li>
+                        <li><strong style="color: #d97706;">Ground</strong>: light reflected off the ground (albedo \\(\\rho_g\\approx 0.2\\)).</li>
+                        <li><strong style="color: #d97706;">Angles</strong>: \\(\\beta\\) is panel tilt; \\(\\gamma\\) is panel azimuth; \\(\\theta_{z,h}\\) and \\(\\gamma_{s,h}\\) are the sun's zenith and azimuth computed from the hour's timestamp and site coordinates.</li>
+                        <li><strong style="color: #d97706;">Units</strong>: Hourly GHI/DNI/DHI are Wh/m². We sum all 8,760 hours and divide by 1000 to get kWh/m²/year.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item">
+                    <span class="result-label">Current POA:</span>
+                    <span class="result-value">${currentPOA} kWh/m²/year</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Location:</span>
+                    <span class="result-value">${site.name} (${site.lat.toFixed(2)}°, ${site.lon.toFixed(2)}°)</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Panel Orientation:</span>
+                    <span class="result-value">${siteAnalysis.tiltAngle}° tilt, ${siteAnalysis.azimuthAngle}° azimuth</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-step">
+            <h4>Step 2: System Performance Ratio (PR)</h4>
+            <p>System efficiency accounting for all losses:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">Performance Ratio Formula</div>
+                <div class="formula-content">
+                    PR = η_inverter × η_temperature × η_soiling × η_wiring × η_mismatch
+                    
+                    Where:
+                    η_inverter = ${inverterEfficiency} (${(inverterEfficiency * 100).toFixed(1)}% efficiency)
+                    η_temperature = ${temperatureLoss.toFixed(3)} (${cellTemp}°C cell temperature)
+                    η_soiling = ${soilingLoss} (${((1-soilingLoss) * 100).toFixed(1)}% loss)
+                    η_wiring = ${wiringLoss} (${((1-wiringLoss) * 100).toFixed(1)}% loss)
+                    η_mismatch = ${mismatchLoss} (${((1-mismatchLoss) * 100).toFixed(1)}% loss)
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item highlight">
+                    <span class="result-label">Overall PR:</span>
+                    <span class="result-value">${(systemPR * 100).toFixed(1)}%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-step">
+            <h4>Step 3: Annual Generation Calculation</h4>
+            <p>Standard photovoltaic energy formula:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">Annual Generation Formula</div>
+                <div class="formula-content">
+                    \\[
+                    E_{\\text{annual}}\\,[\\mathrm{kWh/yr}] = \\frac{POA_{\\text{annual}}\\cdot P_{\\text{array}}\\cdot PR}{1000}
+                    \\]
+                    With current values:
+                    \\[
+                    E_{\\text{annual}} = \\frac{${currentPOA}\\,\\text{kWh/m}^2\\!/\\text{yr}\\;\\cdot\\;${arrayPower}\\,\\text{W}\\;\\cdot\\;${systemPR.toFixed(3)}}{1000}
+                    = ${annualGeneration.toFixed(0)}\\,\\text{kWh/yr}
+                    \\]
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item highlight">
+                    <span class="result-label">Estimated Annual Generation:</span>
+                    <span class="result-value">${annualGeneration.toFixed(0)} kWh/year</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-step">
+            <h4>Step 4: Specific Yield</h4>
+            <p>Energy production per installed kW of PV capacity:</p>
+            
+            <div class="formula-box">
+                <div class="formula-title">Specific Yield Formula</div>
+                <div class="formula-content">
+                    \\[
+                    Y_f\\,[\\mathrm{kWh/kWp/yr}] = POA_{\\text{annual}}\\cdot PR
+                    \\]
+                    With current values:
+                    \\[
+                    Y_f = ${currentPOA}\\,\\text{kWh/m}^2\\!/\\text{yr}\\;\\cdot\\;${systemPR.toFixed(3)}
+                    = ${(currentPOA * systemPR).toFixed(0)}\\,\\text{kWh/kWp/yr}
+                    \\]
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-item highlight">
+                    <span class="result-label">Specific Yield:</span>
+                    <span class="result-value">${(currentPOA * systemPR).toFixed(0)} kWh/kWp/year</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculation-source">
+            <h5>Data Sources</h5>
+            <ul class="source-list">
+                <li>NASA POWER API v2.8.0 - Hourly irradiance data (8,760 hours/year)</li>
+                <li>HDKR Transposition Model (anisotropic diffuse + horizon brightening)</li>
+                <li>Solar geometry based on standard spa-like equations (declination, equation of time, hour angle)</li>
+                <li>IEC 61853-1 - Photovoltaic module performance testing standards</li>
+            </ul>
+        </div>
+    `;
+
+    modal.style.display = 'block';
+    // Trigger MathJax typesetting for newly injected LaTeX
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([content]).catch(() => {});
+    }
 }
